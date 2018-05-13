@@ -1,3 +1,5 @@
+import javafx.geometry.Orientation;
+
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -42,9 +44,6 @@ public class Simulation {
 
     int error = 0;
 
-    CollisionState collisionState;
-    CollisionType collisionType;
-
     enum CollisionState
     {
         Penetrating,
@@ -57,10 +56,19 @@ public class Simulation {
         BoxBox
     }
 
-    Vector2 CollisionNormal;
-    int CollidingBodyIndex;
-    int CollidingBodyIndex2;
-    int CollidingCornerIndex;
+    class Collision {
+        Vector2 CollisionNormal;
+        int CollidingBodyIndex;
+        int CollidingBodyIndex2;
+        int CollidingCornerIndex;
+
+        CollisionState collisionState;
+        CollisionType collisionType;
+    }
+
+    CollisionState collisionState;
+
+    ArrayList<Collision> collisions = new ArrayList<Collision>();
 
     int SourceConfigurationIndex;
     int TargetConfigurationIndex;
@@ -193,36 +201,43 @@ public class Simulation {
                 if(Math.abs(TargetTime - CurrentTime) < 0.0001) {
                     ++error;
                     double move = error / 100.;
-                    System.out.println("time < epsilon error: " + error + " move: " + move);
-                    if(collisionType == CollisionType.BoxBox) {
+                    //System.out.println("time < epsilon error: " + error + " move: " + move);
+                    for(int i = 0; i < collisions.size(); i++) {
+                        Collision state = collisions.get(i);
+                        if(state.collisionState != CollisionState.Penetrating)
+                            continue;
 
-                        //System.out.println("time crash");
-                        RigidBody.Configuration conf = Bodies.get(CollidingBodyIndex).configurations[SourceConfigurationIndex];
-                        RigidBody.Configuration conf2 = Bodies.get(CollidingBodyIndex2).configurations[SourceConfigurationIndex];
+                        if(state.collisionType == CollisionType.BoxBox) {
 
-                        if (conf.CMPosition.x > conf2.CMPosition.x) {
-                            conf.CMPosition.x += move;
-                            conf2.CMPosition.x -= move;
-                        } else {
-                            conf.CMPosition.x -= move;
-                            conf2.CMPosition.x += move;
+                            //System.out.println("time crash");
+                            RigidBody.Configuration conf = Bodies.get(state.CollidingBodyIndex).configurations[SourceConfigurationIndex];
+                            RigidBody.Configuration conf2 = Bodies.get(state.CollidingBodyIndex2).configurations[SourceConfigurationIndex];
+
+                            if (conf.CMPosition.x > conf2.CMPosition.x) {
+                                conf.CMPosition.x += move;
+                                conf2.CMPosition.x -= move;
+                            } else {
+                                conf.CMPosition.x -= move;
+                                conf2.CMPosition.x += move;
+                            }
+
+                            if (conf.CMPosition.y > conf2.CMPosition.y) {
+                                conf.CMPosition.y += move;
+                                conf2.CMPosition.y -= move;
+                            } else {
+                                conf.CMPosition.y -= move;
+                                conf2.CMPosition.y += move;
+                            }
                         }
+                        else {
+                            RigidBody.Configuration conf = Bodies.get(state.CollidingBodyIndex).configurations[SourceConfigurationIndex];
 
-                        if (conf.CMPosition.y > conf2.CMPosition.y) {
-                            conf.CMPosition.y += move;
-                            conf2.CMPosition.y -= move;
-                        } else {
-                            conf.CMPosition.y -= move;
-                            conf2.CMPosition.y += move;
+                            conf.CMPosition.add(Vector2.multiply(move,state.CollisionNormal));
+                            //conf.CMPosition.add(CollisionNormal);
                         }
-                    }
-                    else {
-                        RigidBody.Configuration conf = Bodies.get(CollidingBodyIndex).configurations[SourceConfigurationIndex];
-
-                        conf.CMPosition.add(Vector2.multiply(move,CollisionNormal));
-                        //conf.CMPosition.add(CollisionNormal);
                     }
                 }
+                collisions.clear();
             }
             else
             {
@@ -237,6 +252,7 @@ public class Simulation {
                     do
                     {
                         ResolveCollisions(TargetConfigurationIndex);
+                        collisions.clear();
                         Counter++;
                     } while((CheckForCollisions(TargetConfigurationIndex) ==
                             CollisionState.Colliding) && (Counter < 100));
@@ -368,14 +384,16 @@ public class Simulation {
             RigidBody.Configuration Target =
                     Bodies.get(Counter).configurations[TargetConfigurationIndex];
 
+
             Target.CMPosition = Vector2.add(Source.CMPosition,
                     Vector2.multiply(DeltaTime,Source.CMVelocity));
 
-            Target.Orientation = Source.Orientation +
-                    DeltaTime * Source.AngularVelocity;
-
             Target.CMVelocity = Vector2.add(Source.CMVelocity,
                     Vector2.multiply((DeltaTime * Bodies.get(Counter).OneOverMass), Source.CMForce));
+
+
+            Target.Orientation = Source.Orientation +
+                    DeltaTime * Source.AngularVelocity;
 
             Target.AngularVelocity = Source.AngularVelocity +
                     (DeltaTime * Bodies.get(Counter).OneOverCMMomentOfInertia) *
@@ -402,7 +420,7 @@ public class Simulation {
 
     //-------------------------------------------------------------------------------
 
-    private Vector2 getCollisionNormal(RigidBody.Configuration.BoundingBox Box, Vector2 point) {
+    private Vector2 getCollisionNormal(RigidBody.Configuration.BoundingBox Box, Vector2 point, Collision collision) {
 
         double min = MathTools.REAL_MAX;
         Vector2 normal = new Vector2();
@@ -427,7 +445,7 @@ public class Simulation {
         }
 
         if(min > 1.0)
-            collisionState = CollisionState.Penetrating;
+            collision.collisionState = CollisionState.Penetrating;
 
         return normal;
     }
@@ -461,6 +479,9 @@ public class Simulation {
         // be optimistic!
         collisionState = CollisionState.Clear;
 
+        Collision state = new Collision();
+        state.collisionState = CollisionState.Clear;
+
         for(int Body = 0; Body < NumberOfBodies; ++Body) {
             for(int Body2 = Body + 1; Body2 < NumberOfBodies; ++Body2) {
 
@@ -479,14 +500,14 @@ public class Simulation {
                             Vector2 relative = getRelativeVelocity(Bodies.get(Body2), Bodies.get(Body),
                                                     Box2.vertices[i], ConfigurationIndex);
 
-                            CollisionNormal = getCollisionNormal(Box1, Box2.vertices[i]);
+                            state.CollisionNormal = getCollisionNormal(Box1, Box2.vertices[i], state);
 
-                            CollidingBodyIndex = Body2;
-                            CollidingBodyIndex2 = Body;
-                            CollidingCornerIndex = i;
+                            state.CollidingBodyIndex = Body2;
+                            state.CollidingBodyIndex2 = Body;
+                            state.CollidingCornerIndex = i;
 
-                            if(CollisionNormal.DotProduct(relative) < 0 && collisionState != CollisionState.Penetrating) {
-                                collisionState = CollisionState.Colliding;
+                            if(state.CollisionNormal.DotProduct(relative) < 0 && state.collisionState != CollisionState.Penetrating) {
+                                state.collisionState = CollisionState.Colliding;
                                 break;
                             }
                         }
@@ -498,39 +519,46 @@ public class Simulation {
                             Vector2 relative = getRelativeVelocity(Bodies.get(Body), Bodies.get(Body2),
                                     Box1.vertices[i], ConfigurationIndex);
 
-                            CollisionNormal = getCollisionNormal(Box2, Box1.vertices[i]);
+                            state.CollisionNormal = getCollisionNormal(Box2, Box1.vertices[i], state);
 
-                            CollidingBodyIndex = Body;
-                            CollidingBodyIndex2 = Body2;
-                            CollidingCornerIndex = i;
+                            state.CollidingBodyIndex = Body;
+                            state.CollidingBodyIndex2 = Body2;
+                            state.CollidingCornerIndex = i;
 
-                            if(CollisionNormal.DotProduct(relative) < 0 && collisionState != CollisionState.Penetrating) {
-                                collisionState = CollisionState.Colliding;
+                            if(state.CollisionNormal.DotProduct(relative) < 0 && state.collisionState != CollisionState.Penetrating) {
+                                state.collisionState = CollisionState.Colliding;
                                 break;
                             }
                         }
                     }
 
-                    if(!pointFound || (pointFound && collisionState == CollisionState.Clear)) {
-                        CollisionNormal = getCollisionNormal(Box2, Box1.vertices[0]);
+                    if(!pointFound || (pointFound && state.collisionState == CollisionState.Clear)) {
+                        state.CollisionNormal = getCollisionNormal(Box2, Box1.vertices[0], state);
 
-                        CollidingBodyIndex = Body;
-                        CollidingBodyIndex2 = Body2;
-                        CollidingCornerIndex = 0;
+                        state.CollidingBodyIndex = Body;
+                        state.CollidingBodyIndex2 = Body2;
+                        state.CollidingCornerIndex = 0;
 
-                        collisionState = CollisionState.Penetrating;
-
-                        //Bodies.get(Body).configurations[SourceConfigurationIndex].CMPosition.x += 5;
-                        //Bodies.get(Body2).configurations[SourceConfigurationIndex].CMPosition.x -= 5;
+                        state.collisionState = CollisionState.Penetrating;
                     }
-                    collisionType = CollisionType.BoxBox;
-                    return collisionState;
+                    state.collisionType = CollisionType.BoxBox;
+
+                    if(state.collisionState == CollisionState.Penetrating) {
+                        collisionState = CollisionState.Penetrating;
+                    }
+                    else if(collisionState == CollisionState.Clear)
+                        collisionState = state.collisionState;
+
+                    collisions.add(state);
+
+                    state = new Collision();
+                    state.collisionState = CollisionState.Clear;
                 }
 
             }
         }
 
-        final float DepthEpsilon = 1.0f;
+        final float DepthEpsilon = 0.01f;
 
         final double HalfWidth = WorldWidth / 2.0f;
         final double HalfHeight = WorldHeight / 2.0f;
@@ -563,11 +591,15 @@ public class Simulation {
                     if(axbyc < -DepthEpsilon)
                     {
                         collisionState = CollisionState.Penetrating;
-                        CollisionNormal = wall.Normal;
-                        CollidingCornerIndex = Counter;
-                        CollidingBodyIndex = Body;
-                        collisionType = CollisionType.BoxWall;
-                        return collisionState;
+                        state.collisionState = CollisionState.Penetrating;
+                        state.CollisionNormal = wall.Normal;
+                        state.CollidingCornerIndex = Counter;
+                        state.CollidingBodyIndex = Body;
+                        state.collisionType = CollisionType.BoxWall;
+                        collisions.add(state);
+
+                        state = new Collision();
+                        state.collisionState = CollisionState.Clear;
                     }
                     else
                     if(axbyc < DepthEpsilon)
@@ -576,12 +608,18 @@ public class Simulation {
 
                         if(RelativeVelocity < 0)
                         {
-                            collisionState = CollisionState.Colliding;
-                            CollisionNormal = wall.Normal;
-                            CollidingCornerIndex = Counter;
-                            CollidingBodyIndex = Body;
-                            collisionType = CollisionType.BoxWall;
-                            return collisionState;
+                            if(collisionState != CollisionState.Penetrating)
+                                collisionState = CollisionState.Colliding;
+
+                            state.collisionState = CollisionState.Colliding;
+                            state.CollisionNormal = wall.Normal;
+                            state.CollidingCornerIndex = Counter;
+                            state.CollidingBodyIndex = Body;
+                            state.collisionType = CollisionType.BoxWall;
+                            collisions.add(state);
+
+                            state = new Collision();
+                            state.collisionState = CollisionState.Clear;
                         }
                     }
                 }
@@ -701,87 +739,112 @@ public class Simulation {
 
     private void ResolveCollisions(int ConfigurationIndex) {
 
-        if(collisionType == CollisionType.BoxBox) {
+        for(int i = 0; i < collisions.size(); i++) {
+            Collision state = collisions.get(i);
+            if(state.collisionState != CollisionState.Colliding)
+                continue;
 
-            RigidBody Body = Bodies.get(CollidingBodyIndex);
+            if(state.collisionType == CollisionType.BoxBox) {
+
+                RigidBody Body = Bodies.get(state.CollidingBodyIndex);
+                RigidBody.Configuration Configuration =
+                        Body.configurations[ConfigurationIndex];
+
+                RigidBody Body2 = Bodies.get(state.CollidingBodyIndex2);
+                RigidBody.Configuration Configuration2 =
+                        Body2.configurations[ConfigurationIndex];
+
+                Vector2 Position =
+                        Configuration.Box.vertices[state.CollidingCornerIndex];
+
+                Vector2 CMToCornerPerp = Vector2.subtract(Position,
+                        Configuration.CMPosition).GetPerpendicular();
+
+                Vector2 Velocity1 = Vector2.add(Configuration.CMVelocity,
+                        Vector2.multiply(Configuration.AngularVelocity, CMToCornerPerp));
+
+                Vector2 CMToCornerPerp2 = Vector2.subtract(Position,
+                        Configuration2.CMPosition).GetPerpendicular();
+
+                Vector2 Velocity2 = Vector2.add(Configuration2.CMVelocity,
+                        Vector2.multiply(Configuration2.AngularVelocity, CMToCornerPerp2));
+
+                Vector2 Velocity = Vector2.subtract(Velocity1,Velocity2);
+
+                double ImpulseNumerator = -(1 + Body.CoefficientOfRestitution) *
+                        Velocity.DotProduct(state.CollisionNormal);
+
+                double PerpDot = CMToCornerPerp.DotProduct(state.CollisionNormal);
+
+                double PerpDot2 = CMToCornerPerp2.DotProduct(state.CollisionNormal);
+
+                double ImpulseDenominator =
+                        (Body.OneOverMass + Body2.OneOverMass) +
+                                Body.OneOverCMMomentOfInertia * PerpDot * PerpDot +
+                                Body2.OneOverCMMomentOfInertia * PerpDot2 * PerpDot2;
+
+                double Impulse = ImpulseNumerator / ImpulseDenominator;
+
+                if(state.CollisionNormal.DotProduct(Configuration.CMForce) < 0 && Math.abs(Impulse) < 10)
+                {
+                    //Configuration.CMVelocity.multiply(Math.abs(Impulse)/15.);
+                    //Configuration.AngularVelocity *= Math.abs(Impulse)/15.;
+                }
+
+                if(state.CollisionNormal.DotProduct(Configuration2.CMForce) < 0 && Math.abs(Impulse) < 10)
+                {
+                    //Configuration2.CMVelocity.multiply(Math.abs(Impulse)/15.);
+                    //Configuration2.AngularVelocity *= Math.abs(Impulse)/15.;
+                }
+
+                Configuration.CMVelocity.add(Vector2.multiply(Impulse * Body.OneOverMass, state.CollisionNormal));
+
+                Configuration.AngularVelocity +=
+                        Impulse * Body.OneOverCMMomentOfInertia * PerpDot;
+
+                Configuration2.CMVelocity.subtract(Vector2.multiply(Impulse * Body2.OneOverMass, state.CollisionNormal));
+
+                Configuration2.AngularVelocity -=
+                        Impulse * Body2.OneOverCMMomentOfInertia * PerpDot2;
+
+                return;
+            }
+
+            RigidBody Body = Bodies.get(state.CollidingBodyIndex);
             RigidBody.Configuration Configuration =
                     Body.configurations[ConfigurationIndex];
 
-            RigidBody Body2 = Bodies.get(CollidingBodyIndex2);
-            RigidBody.Configuration Configuration2 =
-                    Body2.configurations[ConfigurationIndex];
-
             Vector2 Position =
-                    Configuration.Box.vertices[CollidingCornerIndex];
+                    Configuration.Box.vertices[state.CollidingCornerIndex];
 
             Vector2 CMToCornerPerp = Vector2.subtract(Position,
                     Configuration.CMPosition).GetPerpendicular();
 
-            Vector2 Velocity1 = Vector2.add(Configuration.CMVelocity,
+            Vector2 Velocity = Vector2.add(Configuration.CMVelocity,
                     Vector2.multiply(Configuration.AngularVelocity, CMToCornerPerp));
 
-            Vector2 CMToCornerPerp2 = Vector2.subtract(Position,
-                    Configuration2.CMPosition).GetPerpendicular();
-
-            Vector2 Velocity2 = Vector2.add(Configuration2.CMVelocity,
-                    Vector2.multiply(Configuration2.AngularVelocity, CMToCornerPerp2));
-
-            Vector2 Velocity = Vector2.subtract(Velocity1,Velocity2);
-
             double ImpulseNumerator = -(1 + Body.CoefficientOfRestitution) *
-                    Velocity.DotProduct(CollisionNormal);
+                    Velocity.DotProduct(state.CollisionNormal);
 
-            double PerpDot = CMToCornerPerp.DotProduct(CollisionNormal);
+            double PerpDot = CMToCornerPerp.DotProduct(state.CollisionNormal);
 
-            double PerpDot2 = CMToCornerPerp2.DotProduct(CollisionNormal);
-
-            double ImpulseDenominator =
-                    (Body.OneOverMass + Body2.OneOverMass) +
-                    Body.OneOverCMMomentOfInertia * PerpDot * PerpDot +
-                            Body2.OneOverCMMomentOfInertia * PerpDot2 * PerpDot2;
+            double ImpulseDenominator = Body.OneOverMass +
+                    Body.OneOverCMMomentOfInertia * PerpDot * PerpDot;
 
             double Impulse = ImpulseNumerator / ImpulseDenominator;
 
-            Configuration.CMVelocity.add(Vector2.multiply(Impulse * Body.OneOverMass, CollisionNormal));
+            if(state.CollisionNormal.DotProduct(Configuration.CMForce) < 0 && Math.abs(Impulse) < 10)
+            {
+                //Configuration.CMVelocity.multiply(Math.abs(Impulse)/15.);
+                //Configuration.AngularVelocity *= Math.abs(Impulse)/15.;
 
+                //Configuration.CMVelocity.subtract(Vector2.multiply(state.CollisionNormal.DotProduct(Velocity), state.CollisionNormal));
+            }
+
+            Configuration.CMVelocity.add(Vector2.multiply(Impulse * Body.OneOverMass, state.CollisionNormal));
             Configuration.AngularVelocity +=
                     Impulse * Body.OneOverCMMomentOfInertia * PerpDot;
-
-            Configuration2.CMVelocity.subtract(Vector2.multiply(Impulse * Body2.OneOverMass, CollisionNormal));
-
-            Configuration2.AngularVelocity -=
-                    Impulse * Body2.OneOverCMMomentOfInertia * PerpDot2;
-
-            return;
         }
-
-        RigidBody Body = Bodies.get(CollidingBodyIndex);
-        RigidBody.Configuration Configuration =
-                Body.configurations[ConfigurationIndex];
-
-        Vector2 Position =
-                Configuration.Box.vertices[CollidingCornerIndex];
-
-        Vector2 CMToCornerPerp = Vector2.subtract(Position,
-                Configuration.CMPosition).GetPerpendicular();
-
-        Vector2 Velocity = Vector2.add(Configuration.CMVelocity,
-                Vector2.multiply(Configuration.AngularVelocity, CMToCornerPerp));
-
-        double ImpulseNumerator = -(1 + Body.CoefficientOfRestitution) *
-                Velocity.DotProduct(CollisionNormal);
-
-        double PerpDot = CMToCornerPerp.DotProduct(CollisionNormal);
-
-        double ImpulseDenominator = Body.OneOverMass +
-                Body.OneOverCMMomentOfInertia * PerpDot * PerpDot;
-
-        double Impulse = ImpulseNumerator / ImpulseDenominator;
-
-        Configuration.CMVelocity.add(Vector2.multiply(Impulse * Body.OneOverMass, CollisionNormal));
-
-        Configuration.AngularVelocity +=
-                Impulse * Body.OneOverCMMomentOfInertia * PerpDot;
     }
 
     //-------------------------------------------------------------------------------

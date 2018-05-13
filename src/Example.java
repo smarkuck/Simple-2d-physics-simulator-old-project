@@ -27,23 +27,28 @@ class Example extends Frame {
 
         Example demo = new Example(400, 400);
 
-        demo.world.addRigidBody(0.01, 40, 20, 1);
-        demo.world.addRigidBody(0.01, 50, 10, 1);
-        demo.world.addRigidBody(0.01, 10, 100, 0.5);
-
-//        demo.world.Bodies.get(0).configurations[0].CMPosition = new Vector2(-100, 0);
-//        demo.world.Bodies.get(1).configurations[0].CMPosition = new Vector2(100, 0);
+//        demo.world.addRigidBody(0.01, 40, 20, 0.5);
+//        demo.world.addRigidBody(0.01, 50, 10, 0.5);
+//        demo.world.addRigidBody(0.01, 10, 100, 0.5);
 //
-//        demo.world.Bodies.get(0).configurations[0].CMVelocity = new Vector2(100, 0);
-//        demo.world.Bodies.get(1).configurations[0].CMVelocity = new Vector2(-100, 0);
-
-        demo.world.Bodies.get(0).configurations[0].CMPosition = new Vector2(0, 100);
-        demo.world.Bodies.get(1).configurations[0].CMPosition = new Vector2(0, 0);
-
-        demo.world.Bodies.get(0).configurations[0].CMVelocity = new Vector2(0, 0);
-        demo.world.Bodies.get(1).configurations[0].CMVelocity = new Vector2(0, 0);
+//        demo.world.Bodies.get(0).configurations[0].CMPosition = new Vector2(100, 0);
+//        demo.world.Bodies.get(1).configurations[0].CMPosition = new Vector2(0, 100);
+//
+//        demo.world.Bodies.get(0).configurations[0].CMVelocity = new Vector2(1000, 0);
 
 
+        demo.world.addRigidBody(0.01, 40, 20, 0.5);
+        demo.world.addRigidBody(0.01, 50, 10, 0.5);
+        demo.world.addRigidBody(0.01, 10, 100, 0.5);
+        demo.world.addRigidBody(0.01, 40, 20, 0.5);
+        demo.world.addRigidBody(0.01, 50, 10, 0.5);
+        demo.world.addRigidBody(0.01, 10, 100, 0.5);
+        demo.world.addRigidBody(0.01, 40, 20, 0.5);
+        demo.world.addRigidBody(0.01, 50, 10, 0.5);
+        demo.world.addRigidBody(0.01, 10, 100, 0.5);
+        demo.world.addRigidBody(0.01, 40, 20, 0.5);
+        demo.world.addRigidBody(0.01, 50, 10, 0.5);
+        demo.world.addRigidBody(0.01, 10, 100, 0.5);
 
         double fps = 1000/60.;
 
