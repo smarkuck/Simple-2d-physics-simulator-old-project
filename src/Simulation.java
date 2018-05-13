@@ -193,7 +193,7 @@ public class Simulation {
                 if(Math.abs(TargetTime - CurrentTime) < 0.0001) {
                     ++error;
                     double move = error / 100.;
-                    System.out.println("time < epsilon");
+                    System.out.println("time < epsilon error: " + error + " move: " + move);
                     if(collisionType == CollisionType.BoxBox) {
 
                         //System.out.println("time crash");
@@ -219,8 +219,8 @@ public class Simulation {
                     else {
                         RigidBody.Configuration conf = Bodies.get(CollidingBodyIndex).configurations[SourceConfigurationIndex];
 
-                        //conf.CMPosition.add(Vector2.multiply(move,CollisionNormal));
-                        conf.CMPosition.add(CollisionNormal);
+                        conf.CMPosition.add(Vector2.multiply(move,CollisionNormal));
+                        //conf.CMPosition.add(CollisionNormal);
                     }
                 }
             }
@@ -465,12 +465,16 @@ public class Simulation {
             for(int Body2 = Body + 1; Body2 < NumberOfBodies; ++Body2) {
 
                 if(SeparateAxes(ConfigurationIndex, Bodies.get(Body), Bodies.get(Body2)) == true) {
-                    //System.out.println("Collision " + Body + ' ' + Body2);
+
                     RigidBody.Configuration.BoundingBox Box1 = Bodies.get(Body).configurations[ConfigurationIndex].Box;
                     RigidBody.Configuration.BoundingBox Box2 = Bodies.get(Body2).configurations[ConfigurationIndex].Box;
 
+                    boolean pointFound = false;
+
                     for(int i = 0; i < 4; i++) {
                         if(pointInPolygon(Box1, Box2.vertices[i])) {
+
+                            pointFound = true;
 
                             Vector2 relative = getRelativeVelocity(Bodies.get(Body2), Bodies.get(Body),
                                                     Box2.vertices[i], ConfigurationIndex);
@@ -489,6 +493,8 @@ public class Simulation {
 
                         if(pointInPolygon(Box2, Box1.vertices[i])) {
 
+                            pointFound = true;
+
                             Vector2 relative = getRelativeVelocity(Bodies.get(Body), Bodies.get(Body2),
                                     Box1.vertices[i], ConfigurationIndex);
 
@@ -505,6 +511,18 @@ public class Simulation {
                         }
                     }
 
+                    if(!pointFound || (pointFound && collisionState == CollisionState.Clear)) {
+                        CollisionNormal = getCollisionNormal(Box2, Box1.vertices[0]);
+
+                        CollidingBodyIndex = Body;
+                        CollidingBodyIndex2 = Body2;
+                        CollidingCornerIndex = 0;
+
+                        collisionState = CollisionState.Penetrating;
+
+                        //Bodies.get(Body).configurations[SourceConfigurationIndex].CMPosition.x += 5;
+                        //Bodies.get(Body2).configurations[SourceConfigurationIndex].CMPosition.x -= 5;
+                    }
                     collisionType = CollisionType.BoxBox;
                     return collisionState;
                 }
@@ -545,6 +563,9 @@ public class Simulation {
                     if(axbyc < -DepthEpsilon)
                     {
                         collisionState = CollisionState.Penetrating;
+                        CollisionNormal = wall.Normal;
+                        CollidingCornerIndex = Counter;
+                        CollidingBodyIndex = Body;
                         collisionType = CollisionType.BoxWall;
                         return collisionState;
                     }

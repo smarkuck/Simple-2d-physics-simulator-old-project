@@ -31,20 +31,19 @@ class Example extends Frame {
         demo.world.addRigidBody(0.01, 50, 10, 1);
         demo.world.addRigidBody(0.01, 10, 100, 0.5);
 
-        //demo.world.Bodies.get(0).configurations[0].CMPosition = new Vector2(0, 100);
+//        demo.world.Bodies.get(0).configurations[0].CMPosition = new Vector2(-100, 0);
+//        demo.world.Bodies.get(1).configurations[0].CMPosition = new Vector2(100, 0);
+//
+//        demo.world.Bodies.get(0).configurations[0].CMVelocity = new Vector2(100, 0);
+//        demo.world.Bodies.get(1).configurations[0].CMVelocity = new Vector2(-100, 0);
 
-        demo.world.Bodies.get(0).configurations[0].CMPosition = new Vector2(-100, 0);
-        demo.world.Bodies.get(1).configurations[0].CMPosition = new Vector2(100, 0);
+        demo.world.Bodies.get(0).configurations[0].CMPosition = new Vector2(0, 100);
+        demo.world.Bodies.get(1).configurations[0].CMPosition = new Vector2(0, 0);
 
-        demo.world.Bodies.get(0).configurations[0].CMVelocity = new Vector2(100, 0);
-        demo.world.Bodies.get(1).configurations[0].CMVelocity = new Vector2(-100, 0);
+        demo.world.Bodies.get(0).configurations[0].CMVelocity = new Vector2(0, 0);
+        demo.world.Bodies.get(1).configurations[0].CMVelocity = new Vector2(0, 0);
 
-        //demo.world.Bodies.get(0).configurations[0].CMPosition = new Vector2(100, 100);
-        //demo.world.Bodies.get(0).configurations[0].CMVelocity = new Vector2(40 ,10);
-        //demo.world.Bodies.get(0).configurations[0].AngularVelocity = MathTools.PI;
 
-        //demo.world.Bodies.get(2).configurations[0].CMPosition = new Vector2(-100, 100);
-        //demo.world.Bodies.get(2).configurations[0].Orientation = 2;
 
         double fps = 1000/60.;
 
