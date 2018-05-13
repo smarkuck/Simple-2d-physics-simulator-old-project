@@ -27,28 +27,60 @@ class Example extends Frame {
 
         Example demo = new Example(400, 400);
 
-//        demo.world.addRigidBody(0.01, 40, 20, 0.5);
-//        demo.world.addRigidBody(0.01, 50, 10, 0.5);
-//        demo.world.addRigidBody(0.01, 10, 100, 0.5);
+//        demo.world.addRigidBody(0.01, 40, 20, 1);
+//        demo.world.addRigidBody(0.01, 50, 10, 1);
+//        demo.world.addRigidBody(0.01, 10, 100, 1);
 //
 //        demo.world.Bodies.get(0).configurations[0].CMPosition = new Vector2(100, 0);
 //        demo.world.Bodies.get(1).configurations[0].CMPosition = new Vector2(0, 100);
 //
-//        demo.world.Bodies.get(0).configurations[0].CMVelocity = new Vector2(1000, 0);
+//        demo.world.Bodies.get(0).configurations[0].CMVelocity = new Vector2(-500, 0);
+
+        demo.world.addRigidBody(0.01, 40, 20, 1);
+        demo.world.Bodies.get(0).configurations[0].CMPosition = new Vector2(0, -20);
+
+        demo.world.addRigidBody(0.01, 40, 20, 1);
+        demo.world.Bodies.get(1).configurations[0].CMPosition = new Vector2(0, 100);
+
+        demo.world.addRigidBody(0.01, 40, 20, 1);
+        demo.world.Bodies.get(2).configurations[0].CMPosition = new Vector2(0, 100);
+        demo.world.Bodies.get(2).configurations[0].CMVelocity = new Vector2(0, -1000);
+
+//        demo.world.addRigidBody(1, 10, 50, 0.5);
+//        demo.world.Bodies.get(0).configurations[0].CMPosition = new Vector2(00, -200);
+//        demo.world.Bodies.get(0).configurations[0].Orientation = 10;
+//
+//        demo.world.addRigidBody(1, 10, 50, 0.5);
+//        demo.world.Bodies.get(1).configurations[0].CMPosition = new Vector2(40, -200);
+//
+//        demo.world.addRigidBody(1, 10, 50, 0.5);
+//        demo.world.Bodies.get(2).configurations[0].CMPosition = new Vector2(80, -200);
+//
+//        demo.world.addRigidBody(1, 10, 50, 0.5);
+//        demo.world.Bodies.get(3).configurations[0].CMPosition = new Vector2(120, -200);
+//
+//        demo.world.addRigidBody(1, 10, 50, 0.5);
+//        demo.world.Bodies.get(4).configurations[0].CMPosition = new Vector2(-120, -100);
+//        demo.world.Bodies.get(4).configurations[0].CMVelocity = new Vector2(300, -100);
 
 
-        demo.world.addRigidBody(0.01, 40, 20, 0.5);
-        demo.world.addRigidBody(0.01, 50, 10, 0.5);
-        demo.world.addRigidBody(0.01, 10, 100, 0.5);
-        demo.world.addRigidBody(0.01, 40, 20, 0.5);
-        demo.world.addRigidBody(0.01, 50, 10, 0.5);
-        demo.world.addRigidBody(0.01, 10, 100, 0.5);
-        demo.world.addRigidBody(0.01, 40, 20, 0.5);
-        demo.world.addRigidBody(0.01, 50, 10, 0.5);
-        demo.world.addRigidBody(0.01, 10, 100, 0.5);
-        demo.world.addRigidBody(0.01, 40, 20, 0.5);
-        demo.world.addRigidBody(0.01, 50, 10, 0.5);
-        demo.world.addRigidBody(0.01, 10, 100, 0.5);
+//        demo.world.addRigidBody(1, 40, 20, 0.5);
+//        demo.world.addRigidBody(1, 40, 20, 0.5);
+//        demo.world.addRigidBody(1, 40, 20, 0.5);
+//        demo.world.addRigidBody(1, 40, 20, 0.5);
+//        demo.world.addRigidBody(1, 40, 20, 0.5);
+//        demo.world.addRigidBody(1, 40, 20, 0.5);
+//        demo.world.addRigidBody(1, 40, 20, 0.5);
+//        demo.world.addRigidBody(1, 40, 20, 0.5);
+//        demo.world.addRigidBody(1, 40, 20, 0.5);
+//        demo.world.addRigidBody(1, 40, 20, 0.5);
+//        demo.world.addRigidBody(1, 40, 20, 0.5);
+//        demo.world.addRigidBody(1, 40, 20, 0.5);
+//        demo.world.addRigidBody(1, 40, 20, 0.5);
+//        demo.world.addRigidBody(1, 40, 20, 0.5);
+//        demo.world.addRigidBody(1, 40, 20, 0.5);
+
+
 
         double fps = 1000/60.;
 

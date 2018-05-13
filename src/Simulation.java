@@ -24,12 +24,12 @@ public class Simulation {
     int NumberOfBodies = 0;
     ArrayList<RigidBody> Bodies = new ArrayList<RigidBody>();
 
-    boolean WorldSpringActive = false;		// spring goes from body 0: vertex 0 to origin
+    boolean WorldSpringActive = true;		// spring goes from body 0: vertex 0 to origin
     double Kws = 30;			// Hooke's spring constant
     double Kwd = 5;			// damping constant
     Vector2 WorldSpringAnchor = new Vector2(0,0);
 
-    boolean BodySpringActive = false;		// spring goes from body 0 to body 1
+    boolean BodySpringActive = true;		// spring goes from body 0 to body 1
     double Kbs = 10;			// Hooke's spring constant
     double Kbd = 5;			// damping constant
     int Body0SpringVertexIndex = 2;
@@ -233,7 +233,7 @@ public class Simulation {
                             RigidBody.Configuration conf = Bodies.get(state.CollidingBodyIndex).configurations[SourceConfigurationIndex];
 
                             conf.CMPosition.add(Vector2.multiply(move,state.CollisionNormal));
-                            //conf.CMPosition.add(CollisionNormal);
+                            //conf.CMPosition.add(state.CollisionNormal);
                         }
                     }
                 }
@@ -336,11 +336,13 @@ public class Simulation {
 
             Spring.add(DampingForce);
 
-            Configuration0.CMForce.subtract(Spring);
-            Configuration0.Torque -= U0.PerpDotProduct(Spring);
+            if(!Double.isNaN(Spring.x) && !Double.isNaN(Spring.y)) {
+                Configuration0.CMForce.subtract(Spring);
+                Configuration0.Torque -= U0.PerpDotProduct(Spring);
 
-            Configuration1.CMForce.add(Spring);
-            Configuration1.Torque += U1.PerpDotProduct(Spring);
+                Configuration1.CMForce.add(Spring);
+                Configuration1.Torque += U1.PerpDotProduct(Spring);
+            }
         }
 
         if(WorldSpringActive)
@@ -367,8 +369,10 @@ public class Simulation {
 
             Spring.add(DampingForce);
 
-            Configuration.CMForce.add(Spring);
-            Configuration.Torque += U.PerpDotProduct(Spring);
+            if(!Double.isNaN(Spring.x) && !Double.isNaN(Spring.y)) {
+                Configuration.CMForce.add(Spring);
+                Configuration.Torque += U.PerpDotProduct(Spring);
+            }
         }
     }
 
