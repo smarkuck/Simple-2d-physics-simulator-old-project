@@ -190,30 +190,37 @@ public class Simulation {
                 // probably caused by interpenetration at the frame start
 
                 //assert(fabs(TargetTime - CurrentTime) > Epsilon);
-                if(Math.abs(TargetTime - CurrentTime) < 0.001 && collisionType == CollisionType.BoxBox) {
+                if(Math.abs(TargetTime - CurrentTime) < 0.0001) {
                     ++error;
-                    double move = error;
+                    double move = error / 100.;
+                    System.out.println("time < epsilon");
+                    if(collisionType == CollisionType.BoxBox) {
 
-                    //System.out.println("time crash");
-                    RigidBody.Configuration conf = Bodies.get(CollidingBodyIndex).configurations[SourceConfigurationIndex];
-                    RigidBody.Configuration conf2 = Bodies.get(CollidingBodyIndex2).configurations[SourceConfigurationIndex];
+                        //System.out.println("time crash");
+                        RigidBody.Configuration conf = Bodies.get(CollidingBodyIndex).configurations[SourceConfigurationIndex];
+                        RigidBody.Configuration conf2 = Bodies.get(CollidingBodyIndex2).configurations[SourceConfigurationIndex];
 
-                    if(conf.CMPosition.x > conf2.CMPosition.x) {
-                        conf.CMPosition.x += move;
-                        conf2.CMPosition.x -= move;
+                        if (conf.CMPosition.x > conf2.CMPosition.x) {
+                            conf.CMPosition.x += move;
+                            conf2.CMPosition.x -= move;
+                        } else {
+                            conf.CMPosition.x -= move;
+                            conf2.CMPosition.x += move;
+                        }
+
+                        if (conf.CMPosition.y > conf2.CMPosition.y) {
+                            conf.CMPosition.y += move;
+                            conf2.CMPosition.y -= move;
+                        } else {
+                            conf.CMPosition.y -= move;
+                            conf2.CMPosition.y += move;
+                        }
                     }
                     else {
-                        conf.CMPosition.x -= move;
-                        conf2.CMPosition.x += move;
-                    }
+                        RigidBody.Configuration conf = Bodies.get(CollidingBodyIndex).configurations[SourceConfigurationIndex];
 
-                    if(conf.CMPosition.y > conf2.CMPosition.y) {
-                        conf.CMPosition.y += move;
-                        conf2.CMPosition.y -= move;
-                    }
-                    else {
-                        conf.CMPosition.y -= move;
-                        conf2.CMPosition.y += move;
+                        //conf.CMPosition.add(Vector2.multiply(move,CollisionNormal));
+                        conf.CMPosition.add(CollisionNormal);
                     }
                 }
             }
