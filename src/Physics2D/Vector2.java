@@ -1,3 +1,5 @@
+package Physics2D;
+
 public class Vector2 {
 
     public double x = 0;

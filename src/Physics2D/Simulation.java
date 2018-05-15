@@ -1,48 +1,355 @@
-import javafx.geometry.Orientation;
+package Physics2D;
 
-import java.awt.*;
 import java.util.ArrayList;
 
 public class Simulation {
 
+    public RigidBody addRigidBody(double Density, double Width, double Height, double CoefficientOfRestitution, boolean isStatic) {
+        RigidBody body = new RigidBody(Density, Width, Height, CoefficientOfRestitution, isStatic);
+        Bodies.add(body);
+        ++NumberOfBodies;
+
+        return body;
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public Simulation removeRigidBody(RigidBody body) {
+        Bodies.remove(body);
+        --NumberOfBodies;
+        return this;
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public RigidBody getRigidBody(int index) {
+        return Bodies.get(index);
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public Force addForce(Vector2 position, double value, double range, boolean isConstant) {
+
+        Force f = new Force();
+
+        f.Position = position;
+        f.isConstant = isConstant;
+        f.value = value;
+
+        if(range <= 0)
+            f.range = 0.1;
+        else
+            f.range = range;
+
+        Forces.add(f);
+
+        return f;
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public Simulation removeForce(Force force) {
+        Forces.remove(force);
+        return this;
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public Force getForce(int index) {
+        return Forces.get(index);
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public Spring addSpring(Vector2 position, RigidBody body, int vertex, double hooke, double damping) {
+        Spring spr = new Spring(position, body, vertex, hooke, damping);
+        Springs.add(spr);
+        return spr;
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public Spring addSpring(RigidBody body1, int vertex1, RigidBody body2, int vertex2, double hooke, double damping) {
+        Spring spr = new Spring(body1, vertex1, body2, vertex2, hooke, damping);
+        Springs.add(spr);
+        return spr;
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public Simulation removeSpring(Spring spring) {
+        Springs.remove(spring);
+        return this;
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public Spring getSpring(int index) {
+        return Springs.get(index);
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public boolean isGravityActive() {
+        return GravityActive;
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public Simulation enableGravity(boolean enable) {
+        GravityActive = enable;
+        return this;
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public Simulation setGravity(Vector2 gravity) {
+        this.Gravity.x = gravity.x;
+        this.Gravity.y = gravity.y;
+        return this;
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public boolean isBorder() {
+        return isBorder;
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public Simulation enableBorder(boolean enable) {
+        isBorder = enable;
+        return this;
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public Simulation(double WorldWidth, double WorldHeight) {
+
+        this.WorldWidth = WorldWidth;
+        this.WorldHeight = WorldHeight;
+        SourceConfigurationIndex = 0;
+        TargetConfigurationIndex = 1;
+
+        for(int i = 0; i < NumberOfWalls; i++) {
+            Walls[i] = new Wall();
+        }
+
+        // inicjalizuj ściany
+        Walls[0].Normal = new Vector2(0, -1);
+        Walls[0].c = WorldHeight/2;
+
+        Walls[1].Normal = new Vector2(0, 1);
+        Walls[1].c = WorldHeight/2;
+
+        Walls[2].Normal = new Vector2(-1 ,0);
+        Walls[2].c = WorldWidth/2;
+
+        Walls[3].Normal = new Vector2(1 ,0);
+        Walls[3].c = WorldWidth/2;
+
+        // generuj linie ścian
+        for(int Counter = 0; Counter < NumberOfWalls; Counter++)
+        {
+            Wall wall = Walls[Counter];
+
+            // stwórz długą linię w kierunku sciany
+
+            Vector2 PointOnWall = Vector2.multiply(-wall.c, wall.Normal);
+            Vector2 v = wall.Normal.GetPerpendicular();
+            double t0 = -MathTools.REAL_MAX;
+            double t1 = MathTools.REAL_MAX;
+
+            // utnij linie na przecięciach
+
+            for(int WallIndex = 0; WallIndex < NumberOfWalls; WallIndex++)
+            {
+                if(WallIndex != Counter)
+                {
+                    Wall clipWall = Walls[WallIndex];
+
+                    double Denominator = v.DotProduct(clipWall.Normal);
+
+                    if(Math.abs(Denominator) > MathTools.Epsilon)
+                    {
+                        double t = - (clipWall.c +
+                                PointOnWall.DotProduct(clipWall.Normal)) /
+                                Denominator;
+
+                        if(Denominator > 0)
+                        {
+                            // linia przecina stronę t0
+                            if(t > t0)
+                            {
+                                t0 = t;
+                            }
+                        }
+                        else
+                        {
+                            // linia przecina stronę t1
+                            if(t < t1)
+                            {
+                                t1 = t;
+                            }
+                        }
+                    }
+                }
+            }
+
+            wall.StartPoint = Vector2.add(PointOnWall, Vector2.multiply(t0,v));
+            wall.EndPoint = Vector2.add(PointOnWall, Vector2.multiply(t1,v));
+        }
+
+        // oblicz początkową pozycję wierzchołków
+        CalculateVertices(0);
+    }
+
+    //-------------------------------------------------------------------------------
+
+    public void Simulate( double DeltaTime ) {
+
+        double CurrentTime = 0;
+        double TargetTime = DeltaTime;
+
+        while(CurrentTime < DeltaTime)
+        {
+            ComputeForces(SourceConfigurationIndex);
+
+            Integrate(TargetTime-CurrentTime);
+
+            CalculateVertices(TargetConfigurationIndex);
+
+            CheckForCollisions(TargetConfigurationIndex);
+
+            if(collisionState == CollisionState.Penetrating)
+            {
+                // za duży skok czasowy, zmniejszanie
+                TargetTime = (CurrentTime + TargetTime) / 2.0;
+
+                if(Math.abs(TargetTime - CurrentTime) < 0.0001) {
+                    ++error;
+                    double move = error / 100.;
+
+                    for(int i = 0; i < collisions.size(); i++) {
+                        Collision state = collisions.get(i);
+                        if(state.collisionState != CollisionState.Penetrating)
+                            continue;
+
+                        if(state.collisionType == CollisionType.BoxBox) {
+
+                            RigidBody Body1 = Bodies.get(state.CollidingBodyIndex);
+                            RigidBody Body2 = Bodies.get(state.CollidingBodyIndex2);
+
+                            if(Body2.isStatic) {
+                                RigidBody tmp = Body1;
+                                Body1 = Body2;
+                                Body2 = tmp;
+                            }
+
+                            RigidBody.Configuration conf = Body1.configurations[SourceConfigurationIndex];
+                            RigidBody.Configuration conf2 = Body2.configurations[SourceConfigurationIndex];
+
+                            if(Body1.isStatic) {
+                                if (conf.CMPosition.x > conf2.CMPosition.x)
+                                    conf2.CMPosition.x -= move;
+                                else {
+                                    conf2.CMPosition.x += move;
+                                }
+
+                                if (conf.CMPosition.y > conf2.CMPosition.y) {
+                                    conf2.CMPosition.y -= move;
+                                } else {
+                                    conf2.CMPosition.y += move;
+                                }
+                            } else {
+                                if (conf.CMPosition.x > conf2.CMPosition.x) {
+                                    conf.CMPosition.x += move;
+                                    conf2.CMPosition.x -= move;
+                                } else {
+                                    conf.CMPosition.x -= move;
+                                    conf2.CMPosition.x += move;
+                                }
+
+                                if (conf.CMPosition.y > conf2.CMPosition.y) {
+                                    conf.CMPosition.y += move;
+                                    conf2.CMPosition.y -= move;
+                                } else {
+                                    conf.CMPosition.y -= move;
+                                    conf2.CMPosition.y += move;
+                                }
+                            }
+                        }
+                        else {
+                            RigidBody.Configuration conf = Bodies.get(state.CollidingBodyIndex).configurations[SourceConfigurationIndex];
+
+                            conf.CMPosition.add(Vector2.multiply(move,state.CollisionNormal));
+                        }
+                    }
+                }
+                collisions.clear();
+            }
+            else
+            {
+                error = 0;
+                // albo wystąpiła kolizja albo nie
+
+                if(collisionState == CollisionState.Colliding)
+                {
+                    int Counter = 0;
+                    do
+                    {
+                        ResolveCollisions(TargetConfigurationIndex);
+                        collisions.clear();
+                        Counter++;
+                    } while((CheckForCollisions(TargetConfigurationIndex) ==
+                            CollisionState.Colliding) && (Counter < 100));
+
+                }
+
+                // zamiana konfiguracji docelowej na źródło
+
+                CurrentTime = TargetTime;
+                TargetTime = DeltaTime;
+
+                for(int i = 0; i < Bodies.size(); i++) {
+                    RigidBody Body = Bodies.get(i);
+                    RigidBody.Configuration tmp = Body.configurations[SourceConfigurationIndex];
+                    Body.configurations[SourceConfigurationIndex] = Body.configurations[TargetConfigurationIndex];
+                    Body.configurations[TargetConfigurationIndex] = tmp;
+                }
+
+                //SourceConfigurationIndex = (SourceConfigurationIndex == 1) ? 0 : 1;
+                //TargetConfigurationIndex = (TargetConfigurationIndex == 1) ? 0 : 1;
+            }
+        }
+    }
+
+    //-------------------------------------------------------------------------------
+
     double WorldWidth, WorldHeight;
 
-    static final int NumberOfWalls = 5;
+    static final int NumberOfWalls = 4;
     Wall[] Walls = new Wall[NumberOfWalls];
 
-    class Wall
-    {
-        // define wall by plane equation
-        Vector2 Normal;		// inward pointing
-        double c;					// ax + by + c = 0
-
-        // points for drawing wall
-        Vector2 StartPoint;
-        Vector2 EndPoint;
-    }
+    ArrayList<Force> Forces = new ArrayList<Force>();
+    ArrayList<Spring> Springs = new ArrayList<Spring>();
 
     int NumberOfBodies = 0;
     ArrayList<RigidBody> Bodies = new ArrayList<RigidBody>();
 
-    boolean WorldSpringActive = true;		// spring goes from body 0: vertex 0 to origin
-    double Kws = 30;			// Hooke's spring constant
-    double Kwd = 5;			// damping constant
-    Vector2 WorldSpringAnchor = new Vector2(0,0);
-
-    boolean BodySpringActive = true;		// spring goes from body 0 to body 1
-    double Kbs = 10;			// Hooke's spring constant
-    double Kbd = 5;			// damping constant
-    int Body0SpringVertexIndex = 2;
-    int Body1SpringVertexIndex = 0;
-
     boolean GravityActive = true;
     Vector2 Gravity = new Vector2(0, -100);
 
-    boolean DampingActive = false;
-    double Kdl = 2.5;		// linear damping factor
-    double Kda = 1400;
+    boolean isBorder = true;
 
     int error = 0;
+
+    CollisionState collisionState;
+
+    ArrayList<Collision> collisions = new ArrayList<Collision>();
+
+    int SourceConfigurationIndex;
+    int TargetConfigurationIndex;
 
     enum CollisionState
     {
@@ -66,212 +373,6 @@ public class Simulation {
         CollisionType collisionType;
     }
 
-    CollisionState collisionState;
-
-    ArrayList<Collision> collisions = new ArrayList<Collision>();
-
-    int SourceConfigurationIndex;
-    int TargetConfigurationIndex;
-
-    //-------------------------------------------------------------------------------
-
-    public void addRigidBody(double Density, double Width, double Height, double CoefficientOfRestitution) {
-        Bodies.add(new RigidBody(Density, Width, Height, CoefficientOfRestitution));
-        ++NumberOfBodies;
-    }
-
-    //-------------------------------------------------------------------------------
-
-    public Simulation(double WorldWidth, double WorldHeight) {
-
-        this.WorldWidth = WorldWidth;
-        this.WorldHeight = WorldHeight;
-        SourceConfigurationIndex = 0;
-        TargetConfigurationIndex = 1;
-
-        for(int i = 0; i < NumberOfWalls; i++) {
-            Walls[i] = new Wall();
-        }
-
-        // initialize walls
-        Walls[0].Normal = new Vector2(0, -1);
-        Walls[0].c = WorldHeight/2 - 3;
-
-        Walls[1].Normal = new Vector2(0, 1);
-        Walls[1].c = WorldHeight/2 - 3;
-
-        Walls[2].Normal = new Vector2(-1 ,0);
-        Walls[2].c = WorldWidth/2 - 3;
-
-        Walls[3].Normal = new Vector2(1 ,0);
-        Walls[3].c = WorldWidth/2 - 3;
-
-        Walls[4].Normal = new Vector2(0.5, 1).GetNormal();
-        Walls[4].c = WorldWidth/2;
-
-        // generate the wall lines
-        for(int Counter = 0; Counter < NumberOfWalls; Counter++)
-        {
-            Wall wall = Walls[Counter];
-
-            // make a big line in the direction of the wall
-
-            Vector2 PointOnWall = Vector2.multiply(-wall.c, wall.Normal);
-            Vector2 v = wall.Normal.GetPerpendicular();
-            double t0 = -MathTools.REAL_MAX;
-            double t1 = MathTools.REAL_MAX;
-
-            // now clip the line to the walls
-
-            for(int WallIndex = 0; WallIndex < NumberOfWalls; WallIndex++)
-            {
-                if(WallIndex != Counter)
-                {
-                    Wall clipWall = Walls[WallIndex];
-
-                    double Denominator = v.DotProduct(clipWall.Normal);
-
-                    if(Math.abs(Denominator) > MathTools.Epsilon)
-                    {
-                        // not coplanar
-
-                        double t = - (clipWall.c +
-                                PointOnWall.DotProduct(clipWall.Normal)) /
-                                Denominator;
-
-                        if(Denominator > 0)
-                        {
-                            // the clip wall's clipping the t0 side of line
-                            if(t > t0)
-                            {
-                                t0 = t;
-                            }
-                        }
-                        else
-                        {
-                            // it's clipping the t1 side
-                            if(t < t1)
-                            {
-                                t1 = t;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // make sure we got clipped
-            //assert((t0 != -REAL_MAX) && (t1 != REAL_MAX));
-            // but not completely clipped
-            //assert(t0 < t1);
-
-            wall.StartPoint = Vector2.add(PointOnWall, Vector2.multiply(t0,v));
-            wall.EndPoint = Vector2.add(PointOnWall, Vector2.multiply(t1,v));
-        }
-
-        // calculate initial box positions
-        CalculateVertices(0);
-    }
-
-    //-------------------------------------------------------------------------------
-
-    public void Simulate( double DeltaTime ) {
-
-        double CurrentTime = 0;
-        double TargetTime = DeltaTime;
-
-        while(CurrentTime < DeltaTime)
-        {
-            ComputeForces(SourceConfigurationIndex);
-
-            Integrate(TargetTime-CurrentTime);
-
-            CalculateVertices(TargetConfigurationIndex);
-
-            CheckForCollisions(TargetConfigurationIndex);
-
-            if(collisionState == CollisionState.Penetrating)
-            {
-                // we simulated too far, so subdivide time and try again
-                TargetTime = (CurrentTime + TargetTime) / 2.0;
-
-                // blow up if we aren't moving forward each step, which is
-                // probably caused by interpenetration at the frame start
-
-                //assert(fabs(TargetTime - CurrentTime) > Epsilon);
-                if(Math.abs(TargetTime - CurrentTime) < 0.0001) {
-                    ++error;
-                    double move = error / 100.;
-                    //System.out.println("time < epsilon error: " + error + " move: " + move);
-                    for(int i = 0; i < collisions.size(); i++) {
-                        Collision state = collisions.get(i);
-                        if(state.collisionState != CollisionState.Penetrating)
-                            continue;
-
-                        if(state.collisionType == CollisionType.BoxBox) {
-
-                            //System.out.println("time crash");
-                            RigidBody.Configuration conf = Bodies.get(state.CollidingBodyIndex).configurations[SourceConfigurationIndex];
-                            RigidBody.Configuration conf2 = Bodies.get(state.CollidingBodyIndex2).configurations[SourceConfigurationIndex];
-
-                            if (conf.CMPosition.x > conf2.CMPosition.x) {
-                                conf.CMPosition.x += move;
-                                conf2.CMPosition.x -= move;
-                            } else {
-                                conf.CMPosition.x -= move;
-                                conf2.CMPosition.x += move;
-                            }
-
-                            if (conf.CMPosition.y > conf2.CMPosition.y) {
-                                conf.CMPosition.y += move;
-                                conf2.CMPosition.y -= move;
-                            } else {
-                                conf.CMPosition.y -= move;
-                                conf2.CMPosition.y += move;
-                            }
-                        }
-                        else {
-                            RigidBody.Configuration conf = Bodies.get(state.CollidingBodyIndex).configurations[SourceConfigurationIndex];
-
-                            conf.CMPosition.add(Vector2.multiply(move,state.CollisionNormal));
-                            //conf.CMPosition.add(state.CollisionNormal);
-                        }
-                    }
-                }
-                collisions.clear();
-            }
-            else
-            {
-                error = 0;
-                // either colliding or clear
-
-                if(collisionState == CollisionState.Colliding)
-                {
-                    // @todo handle multiple simultaneous collisions
-
-                    int Counter = 0;
-                    do
-                    {
-                        ResolveCollisions(TargetConfigurationIndex);
-                        collisions.clear();
-                        Counter++;
-                    } while((CheckForCollisions(TargetConfigurationIndex) ==
-                            CollisionState.Colliding) && (Counter < 100));
-
-                    //assert(Counter < 100);
-                }
-
-                // we made a successful step, so swap configurations
-                // to "save" the data for the next step
-
-                CurrentTime = TargetTime;
-                TargetTime = DeltaTime;
-
-                SourceConfigurationIndex = (SourceConfigurationIndex == 1) ? 0 : 1;
-                TargetConfigurationIndex = (TargetConfigurationIndex == 1) ? 0 : 1;
-            }
-        }
-    }
-
     //-------------------------------------------------------------------------------
 
     private void ComputeForces(int ConfigurationIndex) {
@@ -280,10 +381,14 @@ public class Simulation {
         for(Counter = 0; Counter < NumberOfBodies; Counter++)
         {
             RigidBody Body = Bodies.get(Counter);
+
+            if(Body.isStatic)
+                continue;
+
             RigidBody.Configuration Configuration =
                     Body.configurations[ConfigurationIndex];
 
-            // clear forces
+            // wyczyść siły
 
             Configuration.Torque = 0;
             Configuration.CMForce = new Vector2(0 ,0);
@@ -293,85 +398,93 @@ public class Simulation {
                 Configuration.CMForce.add(Vector2.divide(Gravity,Body.OneOverMass));
             }
 
-            if(DampingActive)
-            {
-                Configuration.CMForce.add(Vector2.multiply(-Kdl,Configuration.CMVelocity));
-                Configuration.Torque += -Kda * Configuration.AngularVelocity;
+            for(int i = 0; i < Forces.size(); i++) {
+
+                Force data = Forces.get(i);
+
+                Vector2 distance = Vector2.subtract(Configuration.CMPosition, data.Position);
+                if(distance.GetLength() > data.range || distance.GetLength() == 0)
+                    continue;
+
+                Vector2 computedForce = distance.GetNormal().multiply(data.value);
+                if(!data.isConstant)
+                    computedForce.multiply((data.range - distance.GetLength())/data.range*0.9+0.1);
+
+                if(distance.GetNormal().DotProduct(Configuration.CMVelocity) > 0 && data.value < 0)
+                    computedForce.multiply(1.046);
+
+                if(distance.GetNormal().DotProduct(Configuration.CMVelocity) < 0 && data.value > 0)
+                    computedForce.multiply(1.0588);
+
+                Configuration.CMForce.add(computedForce);
             }
         }
 
-        if(BodySpringActive)
-        {
-            RigidBody Body0 = Bodies.get(0);
-            RigidBody.Configuration Configuration0 =
-                    Body0.configurations[ConfigurationIndex];
-            RigidBody.Configuration.BoundingBox Box0 =
-                Configuration0.Box;
-            Vector2 Position0 = Box0.vertices[Body0SpringVertexIndex];
-            Vector2 U0 = Vector2.subtract(Position0, Configuration0.CMPosition);
-            Vector2 VU0 = Vector2.add(Configuration0.CMVelocity,
-                    Vector2.multiply(Configuration0.AngularVelocity,U0.GetPerpendicular()));
+        for(int i = 0; i < Springs.size(); i++) {
+            Spring spr = Springs.get(i);
 
-            RigidBody Body1 = Bodies.get(1);
-            RigidBody.Configuration Configuration1 =
-                    Body1.configurations[ConfigurationIndex];
-            RigidBody.Configuration.BoundingBox Box1 =
-                Configuration1.Box;
-            Vector2 Position1 = Box1.vertices[Body1SpringVertexIndex];
-            Vector2 U1 = Vector2.subtract(Position1,Configuration1.CMPosition);
-            Vector2 VU1 = Vector2.add(Configuration1.CMVelocity,
-                    Vector2.multiply(Configuration1.AngularVelocity, U1.GetPerpendicular()));
+            if(spr.toWall == true) {
 
-            // spring goes from 0 to 1
+                RigidBody Body = spr.body2;
+                RigidBody.Configuration Configuration =
+                        Body.configurations[ConfigurationIndex];
 
-            Vector2 SpringVector = Vector2.subtract(Position1, Position0);
-            Vector2 Spring = Vector2.multiply(-Kbs,SpringVector);
+                Vector2 Position = Configuration.Box.vertices[spr.vertex2];
 
-            Vector2 RelativeVelocity = Vector2.subtract(VU1, VU0);
-            // project velocity onto spring to get damping vector
-            // this is basically a Gram-Schmidt projection
-            Vector2 DampingForce =
-                    Vector2.multiply(-Kbd * (RelativeVelocity.DotProduct(SpringVector)/
-                    SpringVector.DotProduct(SpringVector)), SpringVector);
+                Vector2 U = Vector2.subtract(Position, Configuration.CMPosition);
+                Vector2 VU = Vector2.add(Configuration.CMVelocity,
+                        Vector2.multiply(Configuration.AngularVelocity, U.GetPerpendicular()));
 
-            Spring.add(DampingForce);
+                Vector2 Spring = Vector2.multiply(-spr.Hooke, Vector2.subtract(Position, spr.pos));
+                // wytłumianie sprężyny
 
-            if(!Double.isNaN(Spring.x) && !Double.isNaN(Spring.y)) {
-                Configuration0.CMForce.subtract(Spring);
-                Configuration0.Torque -= U0.PerpDotProduct(Spring);
+                Vector2 DampingForce =
+                        Vector2.multiply(-spr.damping * (VU.DotProduct(Spring)/Spring.DotProduct(Spring)), Spring);
 
-                Configuration1.CMForce.add(Spring);
-                Configuration1.Torque += U1.PerpDotProduct(Spring);
+                Spring.add(DampingForce);
+
+                if(!Double.isNaN(Spring.x) && !Double.isNaN(Spring.y)) {
+                    Configuration.CMForce.add(Spring);
+                    Configuration.Torque += U.PerpDotProduct(Spring);
+                }
             }
-        }
+            else {
+                RigidBody Body0 = spr.body1;
+                RigidBody.Configuration Configuration0 =
+                        Body0.configurations[ConfigurationIndex];
 
-        if(WorldSpringActive)
-        {
-            // apply spring to body 0's vertex 0 to anchor
+                Vector2 Position0 = Configuration0.Box.vertices[spr.vertex1];
+                Vector2 U0 = Vector2.subtract(Position0, Configuration0.CMPosition);
+                Vector2 VU0 = Vector2.add(Configuration0.CMVelocity,
+                        Vector2.multiply(Configuration0.AngularVelocity,U0.GetPerpendicular()));
 
-            RigidBody Body = Bodies.get(0);
-            RigidBody.Configuration Configuration =
-                    Body.configurations[ConfigurationIndex];
-            RigidBody.Configuration.BoundingBox Box =
-                Configuration.Box;
+                RigidBody Body1 = spr.body2;
+                RigidBody.Configuration Configuration1 =
+                        Body1.configurations[ConfigurationIndex];
 
-            Vector2 Position = Box.vertices[0];
+                Vector2 Position1 = Configuration1.Box.vertices[spr.vertex2];
+                Vector2 U1 = Vector2.subtract(Position1,Configuration1.CMPosition);
+                Vector2 VU1 = Vector2.add(Configuration1.CMVelocity,
+                        Vector2.multiply(Configuration1.AngularVelocity, U1.GetPerpendicular()));
 
-            Vector2 U = Vector2.subtract(Position, Configuration.CMPosition);
-            Vector2 VU = Vector2.add(Configuration.CMVelocity,
-                    Vector2.multiply(Configuration.AngularVelocity, U.GetPerpendicular()));
+                Vector2 SpringVector = Vector2.subtract(Position1, Position0);
+                Vector2 Spring = Vector2.multiply(-spr.Hooke,SpringVector);
 
-            Vector2 Spring = Vector2.multiply(-Kws, Vector2.subtract(Position, WorldSpringAnchor));
-            // project velocity onto spring to get damping vector
-            // this is basically a Gram-Schmidt projection
-            Vector2 DampingForce =
-                    Vector2.multiply(-Kwd * (VU.DotProduct(Spring)/Spring.DotProduct(Spring)), Spring);
+                Vector2 RelativeVelocity = Vector2.subtract(VU1, VU0);
+                // wytłumianie sprężyny
+                Vector2 DampingForce =
+                        Vector2.multiply(-spr.damping * (RelativeVelocity.DotProduct(SpringVector)/
+                                SpringVector.DotProduct(SpringVector)), SpringVector);
 
-            Spring.add(DampingForce);
+                Spring.add(DampingForce);
 
-            if(!Double.isNaN(Spring.x) && !Double.isNaN(Spring.y)) {
-                Configuration.CMForce.add(Spring);
-                Configuration.Torque += U.PerpDotProduct(Spring);
+                if(!Double.isNaN(Spring.x) && !Double.isNaN(Spring.y)) {
+                    Configuration0.CMForce.subtract(Spring);
+                    Configuration0.Torque -= U0.PerpDotProduct(Spring);
+
+                    Configuration1.CMForce.add(Spring);
+                    Configuration1.Torque += U1.PerpDotProduct(Spring);
+                }
             }
         }
     }
@@ -383,6 +496,9 @@ public class Simulation {
 
         for(Counter = 0; Counter < NumberOfBodies; Counter++)
         {
+            if(Bodies.get(Counter).isStatic)
+                continue;
+
             RigidBody.Configuration Source =
                     Bodies.get(Counter).configurations[SourceConfigurationIndex];
             RigidBody.Configuration Target =
@@ -480,7 +596,6 @@ public class Simulation {
 
     private CollisionState CheckForCollisions(int ConfigurationIndex) {
 
-        // be optimistic!
         collisionState = CollisionState.Clear;
 
         Collision state = new Collision();
@@ -488,6 +603,9 @@ public class Simulation {
 
         for(int Body = 0; Body < NumberOfBodies; ++Body) {
             for(int Body2 = Body + 1; Body2 < NumberOfBodies; ++Body2) {
+
+                if(Bodies.get(Body).isStatic && Bodies.get(Body2).isStatic)
+                    continue;
 
                 if(SeparateAxes(ConfigurationIndex, Bodies.get(Body), Bodies.get(Body2)) == true) {
 
@@ -562,14 +680,16 @@ public class Simulation {
             }
         }
 
-        final float DepthEpsilon = 0.01f;
+        if(isBorder == false)
+            return collisionState;
 
-        final double HalfWidth = WorldWidth / 2.0f;
-        final double HalfHeight = WorldHeight / 2.0f;
+        final float DepthEpsilon = 0.01f;
 
         for(int Body = 0; Body < NumberOfBodies; Body++)
         {
-            // @todo active configuration number?!?!?
+            if(Bodies.get(Body).isStatic)
+                continue;
+
             RigidBody.Configuration Configuration =
                     Bodies.get(Body).configurations[ConfigurationIndex];
 
@@ -748,13 +868,51 @@ public class Simulation {
             if(state.collisionState != CollisionState.Colliding)
                 continue;
 
-            if(state.collisionType == CollisionType.BoxBox) {
+            if(state.collisionType == CollisionType.BoxWall) {
 
                 RigidBody Body = Bodies.get(state.CollidingBodyIndex);
+
                 RigidBody.Configuration Configuration =
                         Body.configurations[ConfigurationIndex];
 
+                Vector2 Position =
+                        Configuration.Box.vertices[state.CollidingCornerIndex];
+
+                Vector2 CMToCornerPerp = Vector2.subtract(Position,
+                        Configuration.CMPosition).GetPerpendicular();
+
+                Vector2 Velocity = Vector2.add(Configuration.CMVelocity,
+                        Vector2.multiply(Configuration.AngularVelocity, CMToCornerPerp));
+
+                double ImpulseNumerator = -(1 + Body.CoefficientOfRestitution) *
+                        Velocity.DotProduct(state.CollisionNormal);
+
+                double PerpDot = CMToCornerPerp.DotProduct(state.CollisionNormal);
+
+                double ImpulseDenominator = Body.OneOverMass +
+                        Body.OneOverCMMomentOfInertia * PerpDot * PerpDot;
+
+                double Impulse = ImpulseNumerator / ImpulseDenominator;
+
+                Configuration.CMVelocity.add(Vector2.multiply(Impulse * Body.OneOverMass, state.CollisionNormal));
+                Configuration.AngularVelocity +=
+                        Impulse * Body.OneOverCMMomentOfInertia * PerpDot;
+            }
+
+            else if(state.collisionType == CollisionType.BoxBox) {
+
+                RigidBody Body = Bodies.get(state.CollidingBodyIndex);
                 RigidBody Body2 = Bodies.get(state.CollidingBodyIndex2);
+
+                if(Body.isStatic) {
+                    RigidBody tmp = Body;
+                    Body = Body2;
+                    Body2 = tmp;
+                }
+
+                RigidBody.Configuration Configuration =
+                        Body.configurations[ConfigurationIndex];
+
                 RigidBody.Configuration Configuration2 =
                         Body2.configurations[ConfigurationIndex];
 
@@ -779,75 +937,38 @@ public class Simulation {
                         Velocity.DotProduct(state.CollisionNormal);
 
                 double PerpDot = CMToCornerPerp.DotProduct(state.CollisionNormal);
+                double PerpDot2 = 0;
 
-                double PerpDot2 = CMToCornerPerp2.DotProduct(state.CollisionNormal);
+                double ImpulseDenominator;
 
-                double ImpulseDenominator =
-                        (Body.OneOverMass + Body2.OneOverMass) +
-                                Body.OneOverCMMomentOfInertia * PerpDot * PerpDot +
-                                Body2.OneOverCMMomentOfInertia * PerpDot2 * PerpDot2;
+                if(!Body2.isStatic) {
+                    PerpDot2 = CMToCornerPerp2.DotProduct(state.CollisionNormal);
+
+                    ImpulseDenominator =
+                            (Body.OneOverMass + Body2.OneOverMass) +
+                                    Body.OneOverCMMomentOfInertia * PerpDot * PerpDot +
+                                    Body2.OneOverCMMomentOfInertia * PerpDot2 * PerpDot2;
+                }
+                else
+                    ImpulseDenominator = Body.OneOverMass +
+                            Body.OneOverCMMomentOfInertia * PerpDot * PerpDot;
 
                 double Impulse = ImpulseNumerator / ImpulseDenominator;
-
-                if(state.CollisionNormal.DotProduct(Configuration.CMForce) < 0 && Math.abs(Impulse) < 10)
-                {
-                    //Configuration.CMVelocity.multiply(Math.abs(Impulse)/15.);
-                    //Configuration.AngularVelocity *= Math.abs(Impulse)/15.;
-                }
-
-                if(state.CollisionNormal.DotProduct(Configuration2.CMForce) < 0 && Math.abs(Impulse) < 10)
-                {
-                    //Configuration2.CMVelocity.multiply(Math.abs(Impulse)/15.);
-                    //Configuration2.AngularVelocity *= Math.abs(Impulse)/15.;
-                }
 
                 Configuration.CMVelocity.add(Vector2.multiply(Impulse * Body.OneOverMass, state.CollisionNormal));
 
                 Configuration.AngularVelocity +=
                         Impulse * Body.OneOverCMMomentOfInertia * PerpDot;
 
-                Configuration2.CMVelocity.subtract(Vector2.multiply(Impulse * Body2.OneOverMass, state.CollisionNormal));
+                if(!Body2.isStatic) {
+                    Configuration2.CMVelocity.subtract(Vector2.multiply(Impulse * Body2.OneOverMass, state.CollisionNormal));
 
-                Configuration2.AngularVelocity -=
-                        Impulse * Body2.OneOverCMMomentOfInertia * PerpDot2;
-
-                return;
+                    Configuration2.AngularVelocity -=
+                            Impulse * Body2.OneOverCMMomentOfInertia * PerpDot2;
+                }
             }
 
-            RigidBody Body = Bodies.get(state.CollidingBodyIndex);
-            RigidBody.Configuration Configuration =
-                    Body.configurations[ConfigurationIndex];
-
-            Vector2 Position =
-                    Configuration.Box.vertices[state.CollidingCornerIndex];
-
-            Vector2 CMToCornerPerp = Vector2.subtract(Position,
-                    Configuration.CMPosition).GetPerpendicular();
-
-            Vector2 Velocity = Vector2.add(Configuration.CMVelocity,
-                    Vector2.multiply(Configuration.AngularVelocity, CMToCornerPerp));
-
-            double ImpulseNumerator = -(1 + Body.CoefficientOfRestitution) *
-                    Velocity.DotProduct(state.CollisionNormal);
-
-            double PerpDot = CMToCornerPerp.DotProduct(state.CollisionNormal);
-
-            double ImpulseDenominator = Body.OneOverMass +
-                    Body.OneOverCMMomentOfInertia * PerpDot * PerpDot;
-
-            double Impulse = ImpulseNumerator / ImpulseDenominator;
-
-            if(state.CollisionNormal.DotProduct(Configuration.CMForce) < 0 && Math.abs(Impulse) < 10)
-            {
-                //Configuration.CMVelocity.multiply(Math.abs(Impulse)/15.);
-                //Configuration.AngularVelocity *= Math.abs(Impulse)/15.;
-
-                //Configuration.CMVelocity.subtract(Vector2.multiply(state.CollisionNormal.DotProduct(Velocity), state.CollisionNormal));
-            }
-
-            Configuration.CMVelocity.add(Vector2.multiply(Impulse * Body.OneOverMass, state.CollisionNormal));
-            Configuration.AngularVelocity +=
-                    Impulse * Body.OneOverCMMomentOfInertia * PerpDot;
+            return;
         }
     }
 

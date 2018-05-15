@@ -1,5 +1,8 @@
+import Physics2D.*;
+
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 class Example extends Frame {
@@ -7,6 +10,10 @@ class Example extends Frame {
     Simulation world;
     int width;
     int height;
+
+    ArrayList<RigidBody> Bodies = new ArrayList<RigidBody>();
+    ArrayList<Force> Forces = new ArrayList<Force>();
+    ArrayList<Spring> Springs = new ArrayList<Spring>();
 
     //-------------------------------------------------------------------------------
 
@@ -25,62 +32,36 @@ class Example extends Frame {
 
     public static void main(String[] args){
 
-        Example demo = new Example(400, 400);
+        Example demo = new Example(600, 800);
 
-//        demo.world.addRigidBody(0.01, 40, 20, 1);
-//        demo.world.addRigidBody(0.01, 50, 10, 1);
-//        demo.world.addRigidBody(0.01, 10, 100, 1);
-//
-//        demo.world.Bodies.get(0).configurations[0].CMPosition = new Vector2(100, 0);
-//        demo.world.Bodies.get(1).configurations[0].CMPosition = new Vector2(0, 100);
-//
-//        demo.world.Bodies.get(0).configurations[0].CMVelocity = new Vector2(-500, 0);
+        for(int i = 0; i < 5; i++) {
+            demo.Bodies.add(demo.world.addRigidBody(0.01, 10, 10, 1.0, false).
+                    setCMPosition(new Vector2(40 - i*20,-i*20+250)));
+        }
 
-        demo.world.addRigidBody(0.01, 40, 20, 1);
-        demo.world.Bodies.get(0).configurations[0].CMPosition = new Vector2(0, -20);
+        for(int i = 0; i < 5; i++) {
+            demo.Bodies.add(demo.world.addRigidBody(0.05, 20, 20, 1.0, false).
+                    setCMPosition(new Vector2(-40 + i*20,50)));
+        }
 
-        demo.world.addRigidBody(0.01, 40, 20, 1);
-        demo.world.Bodies.get(1).configurations[0].CMPosition = new Vector2(0, 100);
+        demo.Forces.add(demo.world.addForce(new Vector2(0, 200), -1000, 300, false));
 
-        demo.world.addRigidBody(0.01, 40, 20, 1);
-        demo.world.Bodies.get(2).configurations[0].CMPosition = new Vector2(0, 100);
-        demo.world.Bodies.get(2).configurations[0].CMVelocity = new Vector2(0, -1000);
+        demo.Bodies.add(demo.world.addRigidBody(0.01, 600, 10, 1, true));
 
-//        demo.world.addRigidBody(1, 10, 50, 0.5);
-//        demo.world.Bodies.get(0).configurations[0].CMPosition = new Vector2(00, -200);
-//        demo.world.Bodies.get(0).configurations[0].Orientation = 10;
-//
-//        demo.world.addRigidBody(1, 10, 50, 0.5);
-//        demo.world.Bodies.get(1).configurations[0].CMPosition = new Vector2(40, -200);
-//
-//        demo.world.addRigidBody(1, 10, 50, 0.5);
-//        demo.world.Bodies.get(2).configurations[0].CMPosition = new Vector2(80, -200);
-//
-//        demo.world.addRigidBody(1, 10, 50, 0.5);
-//        demo.world.Bodies.get(3).configurations[0].CMPosition = new Vector2(120, -200);
-//
-//        demo.world.addRigidBody(1, 10, 50, 0.5);
-//        demo.world.Bodies.get(4).configurations[0].CMPosition = new Vector2(-120, -100);
-//        demo.world.Bodies.get(4).configurations[0].CMVelocity = new Vector2(300, -100);
+        for(int i = 0; i < 4; i++)
+            demo.Bodies.add(demo.world.addRigidBody(0.01, 50, 10, 1.0, false).
+                setCMPosition(new Vector2(i*100-125, -300)));
 
+        demo.Springs.add(demo.world.addSpring(new Vector2(-150, -300), demo.Bodies.get(11), 2, 30, 15));
+        demo.Springs.add(demo.world.addSpring(demo.Bodies.get(11), 3, demo.Bodies.get(12), 2, 30, 15));
+        demo.Springs.add(demo.world.addSpring(demo.Bodies.get(12), 3, demo.Bodies.get(13), 2, 30, 15));
+        demo.Springs.add(demo.world.addSpring(demo.Bodies.get(13), 3, demo.Bodies.get(14), 2, 30, 15));
+        demo.Springs.add(demo.world.addSpring(new Vector2(150, -300), demo.Bodies.get(14), 3, 30, 15));
 
-//        demo.world.addRigidBody(1, 40, 20, 0.5);
-//        demo.world.addRigidBody(1, 40, 20, 0.5);
-//        demo.world.addRigidBody(1, 40, 20, 0.5);
-//        demo.world.addRigidBody(1, 40, 20, 0.5);
-//        demo.world.addRigidBody(1, 40, 20, 0.5);
-//        demo.world.addRigidBody(1, 40, 20, 0.5);
-//        demo.world.addRigidBody(1, 40, 20, 0.5);
-//        demo.world.addRigidBody(1, 40, 20, 0.5);
-//        demo.world.addRigidBody(1, 40, 20, 0.5);
-//        demo.world.addRigidBody(1, 40, 20, 0.5);
-//        demo.world.addRigidBody(1, 40, 20, 0.5);
-//        demo.world.addRigidBody(1, 40, 20, 0.5);
-//        demo.world.addRigidBody(1, 40, 20, 0.5);
-//        demo.world.addRigidBody(1, 40, 20, 0.5);
-//        demo.world.addRigidBody(1, 40, 20, 0.5);
+        demo.Forces.add(demo.world.addForce(new Vector2(0, -350), 1000, 300, false));
+        demo.Forces.add(demo.world.addForce(new Vector2(100, -300), 1000, 300, false));
 
-
+        demo.world.enableGravity(false).enableBorder(false);
 
         double fps = 1000/60.;
 
@@ -89,7 +70,7 @@ class Example extends Frame {
 
             long startRendering=System.nanoTime();
 
-            demo.repaint();
+            //demo.repaint();
             demo.paint(demo.getGraphics());
 
             long durationMs;
@@ -119,6 +100,8 @@ class Example extends Frame {
 
     @Override
     public void paint(Graphics g) {
+        super.paint(g);
+
         Graphics2D g2 = (Graphics2D)g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
@@ -129,42 +112,65 @@ class Example extends Frame {
     private void renderWorld() {
         Graphics2D g = (Graphics2D)getGraphics();
 
-        for(int i = 0; i < world.NumberOfWalls; i++) {
-            int x1, x2, y1, y2;
+        int halfWidth = (width + 100)/2;
+        int halfHeight = (height + 100)/2;
 
-            x1 = (int)world.Walls[i].StartPoint.x;
-            y1 = (int)world.Walls[i].StartPoint.y;
-            x2 = (int)world.Walls[i].EndPoint.x;
-            y2 = (int)world.Walls[i].EndPoint.y;
+        g.clearRect(0, 0, width + 100, height + 100);
 
-            g.drawLine(x1+250, -y1+250, x2+250, -y2+250);
+        if(world.isBorder()) {
+            g.drawLine(50, height+50, 50+width, height+50);
+            g.drawLine(50, 50, 50+width, 50);
+            g.drawLine(50, 50, 50, height+50);
+            g.drawLine(50+width, 50, 50+width, height+50);
         }
 
-        for(int i = 0; i < world.NumberOfBodies; i++) {
+        for(int i = 0; i < Forces.size(); i++) {
+            int x = (int)Forces.get(i).getPosition().x;
+            int y = (int)Forces.get(i).getPosition().y;
+
+            g.drawLine(x+halfWidth-5, -y+halfHeight, x+halfWidth+5, -y+halfHeight);
+            g.drawLine(x+halfWidth, -y+halfHeight-5, x+halfWidth, -y+halfHeight+5);
+        }
+
+        for(int i = 0; i < Springs.size(); i++) {
+
+            Spring spr = Springs.get(i);
             int x1, x2, y1, y2;
 
-            x1 = (int)world.Bodies.get(i).configurations[world.SourceConfigurationIndex].Box.vertices[0].x;
-            y1 = (int)world.Bodies.get(i).configurations[world.SourceConfigurationIndex].Box.vertices[0].y;
+            x1 = (int)spr.getAttachment1().x;
+            y1 = (int)spr.getAttachment1().y;
 
-            x2 = (int)world.Bodies.get(i).configurations[world.SourceConfigurationIndex].Box.vertices[1].x;
-            y2 = (int)world.Bodies.get(i).configurations[world.SourceConfigurationIndex].Box.vertices[1].y;
+            x2 = (int)spr.getAttachment2().x;
+            y2 = (int)spr.getAttachment2().y;
 
-            g.drawLine(x1+250, -y1+250, x2+250, -y2+250);
+            g.drawLine(x1+halfWidth, -y1+halfHeight, x2+halfWidth, -y2+halfHeight);
+        }
 
-            x1 = (int)world.Bodies.get(i).configurations[world.SourceConfigurationIndex].Box.vertices[2].x;
-            y1 = (int)world.Bodies.get(i).configurations[world.SourceConfigurationIndex].Box.vertices[2].y;
+        for(int i = 0; i < Bodies.size(); i++) {
+            int x1, x2, y1, y2;
 
-            g.drawLine(x2+250, -y2+250, x1+250, -y1+250);
+            x1 = (int)Bodies.get(i).getVertex(1).x;
+            y1 = (int)Bodies.get(i).getVertex(1).y;
 
-            x2 = (int)world.Bodies.get(i).configurations[world.SourceConfigurationIndex].Box.vertices[3].x;
-            y2 = (int)world.Bodies.get(i).configurations[world.SourceConfigurationIndex].Box.vertices[3].y;
+            x2 = (int)Bodies.get(i).getVertex(2).x;
+            y2 = (int)Bodies.get(i).getVertex(2).y;
 
-            g.drawLine(x1+250, -y1+250, x2+250, -y2+250);
+            g.drawLine(x1+halfWidth, -y1+halfHeight, x2+halfWidth, -y2+halfHeight);
 
-            x1 = (int)world.Bodies.get(i).configurations[world.SourceConfigurationIndex].Box.vertices[0].x;
-            y1 = (int)world.Bodies.get(i).configurations[world.SourceConfigurationIndex].Box.vertices[0].y;
+            x1 = (int)Bodies.get(i).getVertex(3).x;
+            y1 = (int)Bodies.get(i).getVertex(3).y;
 
-            g.drawLine(x2+250, -y2+250, x1+250, -y1+250);
+            g.drawLine(x2+halfWidth, -y2+halfHeight, x1+halfWidth, -y1+halfHeight);
+
+            x2 = (int)Bodies.get(i).getVertex(4).x;
+            y2 = (int)Bodies.get(i).getVertex(4).y;
+
+            g.drawLine(x1+halfWidth, -y1+halfHeight, x2+halfWidth, -y2+halfHeight);
+
+            x1 = (int)Bodies.get(i).getVertex(1).x;
+            y1 = (int)Bodies.get(i).getVertex(1).y;
+
+            g.drawLine(x2+halfWidth, -y2+halfHeight, x1+halfWidth, -y1+halfHeight);
         }
     }
 }
