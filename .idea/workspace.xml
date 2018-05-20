@@ -2,10 +2,23 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4b7c68e8-7eb1-4801-b154-d093d64f6995" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/out/production/physics 2D/Example$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/physics 2D/Example$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/physics 2D/Example$1.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/physics 2D/Example.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/physics 2D/Example.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/physics 2D.iml" beforeDir="false" afterPath="$PROJECT_DIR$/physics 2D.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Example.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Example.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/physics 2D/Example2.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/Force.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/Force.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/MathTools.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/MathTools.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/RigidBody$Configuration$BoundingBox.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/RigidBody$Configuration$BoundingBox.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/RigidBody$Configuration.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/RigidBody$Configuration.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/RigidBody.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/RigidBody.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/Simulation$Collision.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/Simulation$Collision.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/Simulation$CollisionState.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/Simulation$CollisionState.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/Simulation$CollisionType.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/Simulation$CollisionType.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/Simulation.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/Simulation.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/Spring.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/Spring.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/Vector2.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/physics 2D/Physics2D/Vector2.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Example.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Example2.java" beforeDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -20,28 +33,16 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="Example.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Example.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Example.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="396">
-              <caret line="134" column="9" lean-forward="true" selection-start-line="128" selection-start-column="8" selection-end-line="134" selection-end-column="9" />
+            <state relative-caret-position="136">
+              <caret line="85" lean-forward="true" selection-start-line="85" selection-end-line="85" />
               <folding>
                 <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Example2.java" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/Example2.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="503">
-              <caret line="163" column="20" selection-start-line="163" selection-start-column="20" selection-end-line="163" selection-end-column="20" />
-              <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="e#666#677#0" expanded="true" />
-                <element signature="e#724#731#0" expanded="true" />
-                <element signature="e#780#788#0" expanded="true" />
+                <element signature="e#617#628#0" expanded="true" />
+                <element signature="e#675#682#0" expanded="true" />
+                <element signature="e#731#739#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -120,6 +121,7 @@
         <option value="$PROJECT_DIR$/src/Physics2D/Simulation.java" />
         <option value="$PROJECT_DIR$/src/Example.java" />
         <option value="$PROJECT_DIR$/src/Example2.java" />
+        <option value="$PROJECT_DIR$/src/Physics2D/Example.java" />
       </list>
     </option>
   </component>
@@ -134,35 +136,29 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="AndroidView" />
       <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
-              <item name="physics 2D" type="b2602c69:ProjectViewProjectNode" />
-              <item name="physics 2D" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="b2602c69:ProjectViewProjectNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="physics 2D" type="b2602c69:ProjectViewProjectNode" />
-              <item name="physics 2D" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="b2602c69:ProjectViewProjectNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="physics 2D" type="b2602c69:ProjectViewProjectNode" />
-              <item name="physics 2D" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="Physics2D" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/org/lwjgl/lwjgl.jar!/" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
@@ -179,7 +175,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.Example2">
+  <component name="RunManager" selected="Application.Example">
     <configuration name="Example" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="Example" />
       <module name="physics 2D" />
@@ -243,8 +239,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.Example2" />
         <item itemvalue="Application.Example" />
+        <item itemvalue="Application.Example2" />
         <item itemvalue="Application.Main" />
       </list>
     </recent_temporary>
@@ -264,7 +260,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1066" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info anchor="right" id="Palette" order="3" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -274,12 +269,12 @@
       <window_info anchor="right" id="Capture Analysis" order="3" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
       <window_info anchor="right" id="Maven Projects" order="3" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.3197492" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.3197492" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Terminal" order="7" />
       <window_info id="Capture Tool" order="2" />
       <window_info id="Designer" order="2" />
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12916666" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.12916666" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info id="UI Designer" order="2" />
@@ -296,27 +291,27 @@
     </layout>
     <layout-to-restore>
       <window_info anchor="right" id="Palette" order="3" />
+      <window_info anchor="bottom" id="Terminal" order="7" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Capture Analysis" order="4" />
-      <window_info anchor="right" id="Coverage" order="8" side_tool="true" weight="0.3296875" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.3197492" />
       <window_info anchor="right" id="Theme Preview" order="5" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12916666" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
       <window_info id="UI Designer" order="4" />
       <window_info active="true" anchor="bottom" id="Find" order="1" visible="true" weight="0.3291536" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.17345873" />
       <window_info anchor="right" id="Palette&#9;" order="6" />
-      <window_info anchor="bottom" id="Terminal" order="7" />
+      <window_info anchor="right" id="Coverage" order="8" side_tool="true" weight="0.3296875" />
       <window_info anchor="bottom" id="Event Log" order="8" side_tool="true" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info id="Capture Tool" order="5" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Messages" order="10" weight="0.3291536" />
@@ -350,13 +345,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/Physics2D/MathTools.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/Physics2D/Vector2.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="85">
@@ -704,8 +692,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Example.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="396">
-          <caret line="134" column="9" lean-forward="true" selection-start-line="128" selection-start-column="8" selection-end-line="134" selection-end-column="9" />
+        <state relative-caret-position="2142">
+          <caret line="134" column="9" selection-start-line="128" selection-start-column="8" selection-end-line="134" selection-end-column="9" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -714,13 +702,26 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Example2.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="503">
-          <caret line="163" column="20" selection-start-line="163" selection-start-column="20" selection-end-line="163" selection-end-column="20" />
+        <state relative-caret-position="119">
+          <caret line="17" column="22" lean-forward="true" selection-end-line="281" selection-end-column="1" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#666#677#0" expanded="true" />
-            <element signature="e#724#731#0" expanded="true" />
-            <element signature="e#780#788#0" expanded="true" />
+            <element signature="e#617#628#0" expanded="true" />
+            <element signature="e#675#682#0" expanded="true" />
+            <element signature="e#731#739#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Example.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="85" lean-forward="true" selection-start-line="85" selection-end-line="85" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#617#628#0" expanded="true" />
+            <element signature="e#675#682#0" expanded="true" />
+            <element signature="e#731#739#0" expanded="true" />
           </folding>
         </state>
       </provider>
