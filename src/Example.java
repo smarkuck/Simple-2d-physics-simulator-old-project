@@ -1,4 +1,5 @@
 import Physics2D.*;
+import com.sun.corba.se.impl.orbutil.graph.Graph;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -63,7 +64,8 @@ class Example extends Frame {
 
         demo.world.enableGravity(false).enableBorder(false);
 
-        double fps = 1000/60.;
+        double fps = 1000/1000.;
+        Graphics g = demo.getGraphics();
 
         //draw 60 frames per second
         while(true) {
@@ -71,7 +73,7 @@ class Example extends Frame {
             long startRendering=System.nanoTime();
 
             //demo.repaint();
-            demo.paint(demo.getGraphics());
+            demo.paint(g);
 
             long durationMs;
             // now waits
@@ -149,28 +151,44 @@ class Example extends Frame {
         for(int i = 0; i < Bodies.size(); i++) {
             int x1, x2, y1, y2;
 
-            x1 = (int)Bodies.get(i).getVertex(1).x;
-            y1 = (int)Bodies.get(i).getVertex(1).y;
+            RigidBody body = Bodies.get(i);
 
-            x2 = (int)Bodies.get(i).getVertex(2).x;
-            y2 = (int)Bodies.get(i).getVertex(2).y;
+            g.setPaint(Color.blue);
 
-            g.drawLine(x1+halfWidth, -y1+halfHeight, x2+halfWidth, -y2+halfHeight);
+            int x[] = {(int)body.getVertex(1).x+halfWidth,
+                        (int)body.getVertex(2).x+halfWidth,
+                        (int)body.getVertex(3).x+halfWidth,
+                        (int)body.getVertex(4).x+halfWidth};
 
-            x1 = (int)Bodies.get(i).getVertex(3).x;
-            y1 = (int)Bodies.get(i).getVertex(3).y;
+            int y[] = {-(int)body.getVertex(1).y+halfHeight,
+                    -(int)body.getVertex(2).y+halfHeight,
+                    -(int)body.getVertex(3).y+halfHeight,
+                    -(int)body.getVertex(4).y+halfHeight};
 
-            g.drawLine(x2+halfWidth, -y2+halfHeight, x1+halfWidth, -y1+halfHeight);
+            g.fillPolygon(x, y, 4);
 
-            x2 = (int)Bodies.get(i).getVertex(4).x;
-            y2 = (int)Bodies.get(i).getVertex(4).y;
-
-            g.drawLine(x1+halfWidth, -y1+halfHeight, x2+halfWidth, -y2+halfHeight);
-
-            x1 = (int)Bodies.get(i).getVertex(1).x;
-            y1 = (int)Bodies.get(i).getVertex(1).y;
-
-            g.drawLine(x2+halfWidth, -y2+halfHeight, x1+halfWidth, -y1+halfHeight);
+//            x1 = (int)body.getVertex(1).x;
+//            y1 = (int)body.getVertex(1).y;
+//
+//            x2 = (int)body.getVertex(2).x;
+//            y2 = (int)body.getVertex(2).y;
+//
+//            g.drawLine(x1+halfWidth, -y1+halfHeight, x2+halfWidth, -y2+halfHeight);
+//
+//            x1 = (int)body.getVertex(3).x;
+//            y1 = (int)body.getVertex(3).y;
+//
+//            g.drawLine(x2+halfWidth, -y2+halfHeight, x1+halfWidth, -y1+halfHeight);
+//
+//            x2 = (int)body.getVertex(4).x;
+//            y2 = (int)body.getVertex(4).y;
+//
+//            g.drawLine(x1+halfWidth, -y1+halfHeight, x2+halfWidth, -y2+halfHeight);
+//
+//            x1 = (int)body.getVertex(1).x;
+//            y1 = (int)body.getVertex(1).y;
+//
+//            g.drawLine(x2+halfWidth, -y2+halfHeight, x1+halfWidth, -y1+halfHeight);
         }
     }
 }
