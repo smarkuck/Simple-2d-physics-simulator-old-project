@@ -146,13 +146,20 @@ public class Vector2 {
 
     //-------------------------------------------------------------------------------
 
-    private double DotProduct(Vector2 a) {
+    /**
+     * Metoda zwraca iloczyn skalarny wektorów, uwzględnia część drugiego wektora skierowaną w stronę pierwszego
+     * @return Vector2 nowy wektor
+     */
+    public double DotProduct(Vector2 a) {
         return this.x*a.x + this.y*a.y;
     }
 
     //-------------------------------------------------------------------------------
-    
-    private double PerpDotProduct(Vector2 a) {
+    /**
+     * Metoda zwraca iloczyn skalarny wektorów, uwzględnia część drugiego wektora skierowaną w stronę przeciwna do naszego
+     * @return Vector2 nowy wektor
+     */
+    public double PerpDotProduct(Vector2 a) {
         return this.x*a.y - this.y*a.x;
     }
 
