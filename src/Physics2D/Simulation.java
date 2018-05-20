@@ -1,9 +1,23 @@
 package Physics2D;
 
 import java.util.ArrayList;
-
+/**
+ * Klasa tworząca całą symulację, trzymająca wszystkie obiekty i ustawiająca zależności między nimi
+ *
+ * @version 1.0
+ * @since   2018-05-19
+ */
 public class Simulation {
 
+    /**
+     * Metoda tworząca i dodająca obiekt do symulacji
+     * @param Density gęstość
+     * @param Width szerokośc
+     * @param Height wysokość
+     * @param CoefficientOfRestitution współczynnik sprężystości
+     * @param isStatic ruchomośc obiektu - może się ruszać = true
+     * @return RigitBody zwraca referencje do nowo stworzonego obiektu dodanego do symulacji
+     */
     public RigidBody addRigidBody(double Density, double Width, double Height, double CoefficientOfRestitution, boolean isStatic) {
         RigidBody body = new RigidBody(Density, Width, Height, CoefficientOfRestitution, isStatic);
         Bodies.add(body);
@@ -14,6 +28,11 @@ public class Simulation {
 
     //-------------------------------------------------------------------------------
 
+    /**
+     * Metoda usuwająca obiekt z symulacji
+     * @param body obiekt który chcemy usunąć
+     * @return Simulation referencja do symulacji
+     */
     public Simulation removeRigidBody(RigidBody body) {
         Bodies.remove(body);
         --NumberOfBodies;
@@ -22,12 +41,25 @@ public class Simulation {
 
     //-------------------------------------------------------------------------------
 
+    /**
+     * Metoda zwracająca ciało należące do symulacji o określonym indeksie
+     * @param index pozycja obiektu
+     * @return RigitBody ciało leżące pod numerem index
+     */
     public RigidBody getRigidBody(int index) {
         return Bodies.get(index);
     }
 
     //-------------------------------------------------------------------------------
 
+    /**
+     * Metoda dodająca siłę do symulacji
+     * @param position punkt w którym chcemy umieścić siłę
+     * @param value wartość siły
+     * @param range zasięg działania siły
+     * @param isConstant czy siła powinna zmieniać się wraz ze wzrostem zasięgu, jeśli true to wtedy razem z zasięgiem siła zmierza do 0
+     * @return double szerokość ciała
+     */
     public Force addForce(Vector2 position, double value, double range, boolean isConstant) {
 
         Force f = new Force();
@@ -48,6 +80,12 @@ public class Simulation {
 
     //-------------------------------------------------------------------------------
 
+    /**
+     * Metoda usuwająca silę z symulacji
+     * @param force siła którą chcemu usunąć
+     * @return Simulation metoda zwraca referencję do obiektu
+     */
+
     public Simulation removeForce(Force force) {
         Forces.remove(force);
         return this;
@@ -55,11 +93,26 @@ public class Simulation {
 
     //-------------------------------------------------------------------------------
 
+    /**
+     * Metoda zwracająca siłę pod określoną pozycją
+     * @param index pozycja siły którą chcemy pobrać
+     * @return Force siła znajdująca się pod określoną przez index pozycją
+     */
     public Force getForce(int index) {
         return Forces.get(index);
     }
 
     //-------------------------------------------------------------------------------
+
+    /**
+     * Metoda dodająca "sprężynę" do symulacji przyczepioną do punktu oraz wybranego ciała
+     * @param position punkt w którym chcemy umieścić sprężynę
+     * @param body ciało do którego chcemy przyczepić sprężynę
+     * @param vertex numer wierzchołka ciała body <1;4> do którego chcemy przyczepić sprężynę
+     * @param hooke współczynnik sprężystości
+     * @param damping współczynnik wytłumienia
+     * @return Spring nowa sprężyna, dodana do spręzyn w symulacji
+     */
 
     public Spring addSpring(Vector2 position, RigidBody body, int vertex, double hooke, double damping) {
         Spring spr = new Spring(position, body, vertex, hooke, damping);
@@ -68,7 +121,16 @@ public class Simulation {
     }
 
     //-------------------------------------------------------------------------------
-
+    /**
+     * Metoda dodająca "sprężynę" do symulacji przyczepioną do dwóch obiektów
+     * @param body1 pierwsze ciało do którego chcemy przyczepić sprężynę
+     * @param vertex1 numer wierzchołka pierwszego ciała body1 z zakresu <1;4> do którego chcemy przyczepić sprężynę
+     * @param body2 drugie ciało ciało do którego chcemy przyczepić sprężynę
+     * @param vertex2 numer wierzchołka drugiego ciała body2 z zakresu <1;4> do którego chcemy przyczepić sprężynę
+     * @param hooke współczynnik sprężystości
+     * @param damping współczynnik wytłumienia
+     * @return Spring nowa sprężyna, dodana do spręzyn w symulacji
+     */
     public Spring addSpring(RigidBody body1, int vertex1, RigidBody body2, int vertex2, double hooke, double damping) {
         Spring spr = new Spring(body1, vertex1, body2, vertex2, hooke, damping);
         Springs.add(spr);
@@ -77,32 +139,54 @@ public class Simulation {
 
     //-------------------------------------------------------------------------------
 
+    /**
+     * Metoda usuwająca wybraną "sprężynę" z symulacji
+     * @param spring sprężyna którą chcemy usunąć
+     * @return referencja do naszej symulacji już bez sprężyny
+     */
     public Simulation removeSpring(Spring spring) {
         Springs.remove(spring);
         return this;
     }
 
     //-------------------------------------------------------------------------------
-
+    /**
+     * Metoda zwracająca "sprężynę" z symulacji na pozycji określonej indeksem
+     * @param index pozycja na której znajduje się sprężyna z liście sprężyn
+     * @return spręzyna na wybranej pozycji
+     */
     public Spring getSpring(int index) {
         return Springs.get(index);
     }
 
     //-------------------------------------------------------------------------------
 
+    /**
+     * Metoda sprawdzająca czy grawitacja jest włączona
+     * @return zwraca true gdy grawitacja działa
+     */
     public boolean isGravityActive() {
         return GravityActive;
     }
 
     //-------------------------------------------------------------------------------
 
+    /**
+     * Metoda włączająca lub wyłączająca grawitację
+     * @param enable true - włącza grawitacje false- wyłącza
+     * @return referencja do naszej symulacji
+     */
     public Simulation enableGravity(boolean enable) {
         GravityActive = enable;
         return this;
     }
 
     //-------------------------------------------------------------------------------
-
+    /**
+     * Metoda ustawiająca wartość siły grawitacji
+     * @param gravity Vector2 określający wartość pionową i poziomą siły grawitacji
+     * @return referencja do naszej symulacji
+     */
     public Simulation setGravity(Vector2 gravity) {
         this.Gravity.x = gravity.x;
         this.Gravity.y = gravity.y;
@@ -111,12 +195,21 @@ public class Simulation {
 
     //-------------------------------------------------------------------------------
 
+    /**
+     * Metoda sprawdzająca czy "ściany"/granice całej symulacji sa włączone
+     * @return jeśli symulacja jest ograniczona ścianami zwraca true
+     */
     public boolean isBorder() {
         return isBorder;
     }
 
     //-------------------------------------------------------------------------------
 
+    /**
+     * Metoda włączająca "ściany"/granice całej symulacji
+     * @param enable enable = true gdy mają być włączone false = wyłaczone
+     * @return zwraca referencję do zmienionej symulacji
+     */
     public Simulation enableBorder(boolean enable) {
         isBorder = enable;
         return this;
@@ -124,6 +217,12 @@ public class Simulation {
 
     //-------------------------------------------------------------------------------
 
+    /**
+     * Konstruktor symulacji
+     * tworzenie sumulacji o podanej szerokości i wysokości
+     * @param WorldHeight wysokość symulacji
+     * @param WorldWidth szerokość symulacji
+     */
     public Simulation(double WorldWidth, double WorldHeight) {
 
         this.WorldWidth = WorldWidth;
@@ -205,7 +304,10 @@ public class Simulation {
     }
 
     //-------------------------------------------------------------------------------
-
+    /**
+     * Metoda która zmienia nam symulację z krokiem czasu podanym jako parametr, główna metoda zmianiająca scenę
+     * @param DeltaTime
+     */
     public void Simulate( double DeltaTime ) {
 
         double CurrentTime = 0;
